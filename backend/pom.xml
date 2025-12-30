@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.0.1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>sn.dev</groupId>
+	<artifactId>neo4flix-backend</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>neo4flix-backend</name>
+	<description>Parent project for Neo4Flix backend microservices</description>
+    <packaging>pom</packaging>
+
+	<modules>
+		<module>api-gateway</module>
+		<module>movie-service</module>
+		<module>rating-service</module>
+		<module>recommendation-service</module>
+		<module>user-service</module>
+	</modules>
+
+	<properties>
+		<java.version>21</java.version>
+        <spring-cloud.version>2025.1.0</spring-cloud.version>
+	</properties>
+
+</project>

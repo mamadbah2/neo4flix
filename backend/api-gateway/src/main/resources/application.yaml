@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**
+        - id: movie-service
+          uri: lb://movie-service
+          predicates:
+            - Path=/movies/**
+        - id: rating-service
+          uri: lb://rating-service
+          predicates:
+            - Path=/ratings/**
+        - id: recommendation-service
+          uri: lb://recommendation-service
+          predicates:
+            - Path=/recommendations/**
+
+server:
+  port: 5050

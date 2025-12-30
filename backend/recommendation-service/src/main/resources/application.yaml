@@ -1,0 +1,21 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: recommendation-service
+  # Configuration Neo4j
+  neo4j:
+    uri: ${NEO4J_URI:bolt://vps-77043236.vps.ovh.ca:7687/}
+    authentication:
+      username: ${NEO4J_USERNAME:neo4j}
+      password: ${NEO4J_PASSWORD:Neo4j2022} # À modifier selon ta config Docker
+  
+  data:
+    neo4j:
+      database: neo4j
+
+# Pour voir les requêtes Cypher dans la console (Utile pour apprendre !)
+logging:
+  level:
+    org.springframework.data.neo4j: DEBUG

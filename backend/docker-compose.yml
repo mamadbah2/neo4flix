@@ -1,0 +1,115 @@
+x-deploy-resources: &deploy-resources
+  resources:
+    limits:
+      memory: 512M
+    reservations:
+      memory: 256M
+
+x-neo-env: &neo-env
+  SPRING_DATA_MONGODB_URI: mongodb+srv://mamadbah:$$Atlas2022@cluster0.wlwhrhg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+  NEO4J_USERNAME: neo4j
+  NEO4J_PASSWORD: Neo4j2022
+  NEO4J_URI: bolt://vps-77043236.vps.ovh.ca:7687/
+
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "5050:5050"
+    networks:
+      - neo4flix-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5050/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    deploy: *deploy-resources
+    restart: unless-stopped
+
+  movie-service:
+    build:
+      context: ./movie-service
+      dockerfile: Dockerfile
+    container_name: movie-service
+    ports:
+      - "8082:8082"
+    environment:
+      <<: *neo-env
+    networks:
+      - neo4flix-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    deploy: *deploy-resources
+    restart: unless-stopped
+
+  rating-service:
+    build:
+      context: ./rating-service
+      dockerfile: Dockerfile
+    container_name: rating-service
+    ports:
+      - "8084:8084"
+    environment:
+      <<: *neo-env
+    networks:
+      - neo4flix-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    deploy: *deploy-resources
+    restart: unless-stopped
+
+  recommendation-service:
+    build:
+      context: ./recommendation-service
+      dockerfile: Dockerfile
+    container_name: recommendation-service
+    ports:
+      - "8083:8083"
+    environment:
+      <<: *neo-env
+    networks:
+      - neo4flix-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    deploy: *deploy-resources
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      <<: *neo-env
+    networks:
+      - neo4flix-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    deploy: *deploy-resources
+    restart: unless-stopped
+
+networks:
+  neo4flix-network:
+    driver: bridge
