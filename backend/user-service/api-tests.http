@@ -1,0 +1,14 @@
+@baseUrl=http://localhost:8081/api/users/
+
+### Créer un utilisateur (Simule un retour de Keycloak)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "keycloakId": "user_12345",
+  "username": "Mamadou",
+  "email": "mamadou@example.com"
+}
+
+### Récupérer l'utilisateur
+GET {{baseUrl}}user_12345

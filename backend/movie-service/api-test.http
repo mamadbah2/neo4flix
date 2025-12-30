@@ -1,0 +1,24 @@
+### Variables de base
+@baseUrl = http://localhost:8082/movies/
+
+### Récupérer tous les films
+GET {{baseUrl}}
+
+### Récupérer un film par ID
+@id = d2264670-b225-4872-8db5-07807d0a43c0
+GET {{baseUrl}}{{id}}
+
+
+### Créer un nouveau film (Inception)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "title": "Inception",
+  "description": "Un voleur qui subtilise des secrets par le biais du rêve.",
+  "releaseYear": 2010,
+  "genres": [
+    {"name": "Action"},
+    {"name": "Sci-Fi"}
+  ]
+}

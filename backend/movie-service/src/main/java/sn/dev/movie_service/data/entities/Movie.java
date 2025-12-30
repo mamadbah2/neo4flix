@@ -1,7 +1,6 @@
 package sn.dev.movie_service.data.entities;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;

@@ -4,7 +4,6 @@ server:
 spring:
   application:
     name: movie-service
-  
   # Configuration Neo4j
   neo4j:
     uri: ${NEO4J_URI:bolt://vps-77043236.vps.ovh.ca:7687/}
