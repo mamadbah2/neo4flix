@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import sn.dev.movie_service.web.dto.requests.MovieCreateRequest;
 import sn.dev.movie_service.web.dto.responses.MovieResponse;
 
-@RequestMapping("/movies")
+@RequestMapping("/api/movies")
 public interface MovieController {
     @GetMapping("/")
     ResponseEntity<List<MovieResponse>> getAllMovies();
