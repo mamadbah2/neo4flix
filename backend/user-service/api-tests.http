@@ -12,3 +12,25 @@ Content-Type: application/json
 
 ### Récupérer l'utilisateur
 GET {{baseUrl}}user_12345
+
+### 1. Récupérer un Token (Simule le login Angular)
+# @name login
+POST http://localhost:8080/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&
+client_id=neo4flix-client&
+username=ton_user&
+password=ton_password
+
+### 2. Envoyer la note avec le Token récupéré
+@token = {{login.response.body.access_token}}
+
+POST http://localhost:8084/api/ratings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "movieId": "id-de-ton-film-neo4j",
+  "score": 5
+}

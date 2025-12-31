@@ -1,6 +1,8 @@
 package sn.dev.user_service.web.controllers.implementation;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 
 import sn.dev.user_service.services.UserService;
@@ -32,5 +34,24 @@ public class UserControllerImpl implements UserController {
         var user = UserMapper.fromCreateRequest(userRequest);
         var saved = userService.createUser(user);
         return ResponseEntity.ok(UserMapper.toResponse(saved));
+    }
+
+    @Override
+    public ResponseEntity<UserResponse> getCurrentUser() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Jwt jwt;
+        try {
+            jwt = (Jwt) authentication.getPrincipal();
+        } catch (ClassCastException e) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        var user = userService.syncUser(jwt);
+        return ResponseEntity.ok(UserMapper.toResponse(user));
+        
     }
 }

@@ -14,6 +14,10 @@ import sn.dev.user_service.web.dto.responses.UserResponse;
 public interface UserController {
     @GetMapping("/{id}")
     ResponseEntity<UserResponse> getUserById(@PathVariable String id);
+
+    @GetMapping("/me")
+    ResponseEntity<UserResponse> getCurrentUser();
+
     @PostMapping("/")
     ResponseEntity<UserResponse> createUser(@RequestBody UserCreateRequest user);
 }
