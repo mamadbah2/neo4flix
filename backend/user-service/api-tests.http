@@ -11,26 +11,33 @@ Content-Type: application/json
 }
 
 ### Récupérer l'utilisateur
-GET {{baseUrl}}user_12345
+GET {{baseUrl}}me
+Authorization: Bearer {{token}}
 
-### 1. Récupérer un Token (Simule le login Angular)
-# @name login
-POST http://localhost:8080/realms/neo4flix/protocol/openid-connect/token
+### 1. Récupérer un Token (Simule le login Angular) avec Keycloak
+# @name loginKeycloak
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=password&
-client_id=neo4flix-client&
-username=ton_user&
-password=ton_password
+grant_type=password&client_id=neo4flix-app&username=mamadbah&password=password123
+
+###
+# @name refreshTokenKeycloak
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&client_id=neo4flix-app&refresh_token={{refreshToken}}
+
+###
+@token = {{loginKeycloak.response.body.access_token}}
+@refreshToken = {{loginKeycloak.response.body.refresh_token}}
 
 ### 2. Envoyer la note avec le Token récupéré
-@token = {{login.response.body.access_token}}
-
-POST http://localhost:8084/api/ratings
+POST http://localhost:8084/api/rates/
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "movieId": "id-de-ton-film-neo4j",
+  "movieId": "d2264670-b225-4872-8db5-07807d0a43c0",
   "score": 5
 }

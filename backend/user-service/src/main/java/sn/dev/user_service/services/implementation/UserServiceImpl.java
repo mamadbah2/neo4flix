@@ -1,5 +1,7 @@
 package sn.dev.user_service.services.implementation;
 
+import java.util.Map;
+
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +23,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByKeycloakId(id).orElse(null);
     }
 
-    @Override 
+    @Override
     // Deprecated: use syncUser instead
     public User createUser(User user) {
         return userRepository.save(user);
@@ -29,17 +31,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User syncUser(Jwt jwt) {
+        // jwt est une instance de org.springframework.security.oauth2.jwt.Jwt
+        Map<String, Object> claims = jwt.getClaims();
+        claims.forEach((key, value) -> {
+            System.out.println(key + ": " + value);
+        });
         String keycloakId = jwt.getClaimAsString("sub");
-        
+
         return userRepository.findById(keycloakId)
-            .orElseGet(() -> {
-                // Si l'utilisateur n'existe pas dans Neo4j, on le crée
-                User newUser = new User();
-                newUser.setKeycloakId(keycloakId);
-                newUser.setUsername(jwt.getClaimAsString("username"));
-                newUser.setEmail(jwt.getClaimAsString("email"));
-                return userRepository.save(newUser);
-            });
+                .orElseGet(() -> {
+                    // Si l'utilisateur n'existe pas dans Neo4j, on le crée
+                    User newUser = new User();
+                    newUser.setKeycloakId(keycloakId);
+                    newUser.setUsername(jwt.getClaimAsString("preferred_username"));
+                    newUser.setEmail(jwt.getClaimAsString("email"));
+                    return userRepository.save(newUser);
+                });
     }
-    
+
 }

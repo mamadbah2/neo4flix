@@ -10,10 +10,16 @@ spring:
     authentication:
       username: ${NEO4J_USERNAME:neo4j}
       password: ${NEO4J_PASSWORD:Neo4j2022} # À modifier selon ta config Docker
-  
   data:
     neo4j:
       database: neo4j
+  # Configuration sécurité OAuth2 Resource Server
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # URL interne Docker vers ton royaume (realm) Keycloak
+          issuer-uri: http://keycloak4flix.duckdns.org/realms/neo4flix
 
 # Pour voir les requêtes Cypher dans la console (Utile pour apprendre !)
 logging:
