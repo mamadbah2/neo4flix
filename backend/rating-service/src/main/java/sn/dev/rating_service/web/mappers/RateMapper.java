@@ -12,6 +12,7 @@ public class RateMapper {
     public static Rate toEntity(RateRequest dto) {
         Rate rate = new Rate();
         rate.setScore(dto.getScore());
+    
         // Si Rate a un champ movieId ou autre, l'ajouter ici
         return rate;
     }
