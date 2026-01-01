@@ -5,7 +5,7 @@
 GET {{baseUrl}}
 
 ### Récupérer un film par ID
-@id = ddaa11cb-62bc-4d20-9722-7cef5e3f36ae
+@id = 641fc921-f7bf-45d7-83b9-dd8069f22b96
 GET {{baseUrl}}{{id}}
 
 

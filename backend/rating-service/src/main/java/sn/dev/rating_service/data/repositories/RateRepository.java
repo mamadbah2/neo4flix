@@ -6,7 +6,7 @@ import org.springframework.data.neo4j.repository.query.Query;
 import sn.dev.rating_service.data.entities.Rate;
 
 public interface RateRepository extends Neo4jRepository<Rate, String> {
-    @Query("MATCH (u:User {id: $userId}) MATCH (m:Movie {id: $movieId}) " +
+    @Query("MATCH (u:User {keycloakId: $userId}) MATCH (m:Movie {id: $movieId}) " +
         "MERGE (u)-[r:RATED]->(m) " +
         "SET r.score = $score " +
         "RETURN r")
