@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import sn.dev.rating_service.clients.MovieClient;
 import sn.dev.rating_service.data.entities.Rate;
 import sn.dev.rating_service.data.repositories.RateRepository;
+import sn.dev.rating_service.exceptions.NotFoundException;
 import sn.dev.rating_service.services.RateService;
 
 @Service
@@ -18,8 +19,10 @@ public class RateServiceImpl implements RateService  {
     @Override
     public Rate createRate(String userId, String movieId, int score) {
         if (!checkMovieExists(movieId)) {
-            throw new IllegalArgumentException("Movie with ID " + movieId + " does not exist.");
+            throw new NotFoundException("Movie with ID " + movieId + " not found.");
         }
+        System.out.println("++++++++++++++++++++++++++++++++++++++++++");
+        System.out.println("Creating rate for userId: " + userId + ", movieId: " + movieId + ", score: " + score);
 
         return rateRepository.createRate(userId, movieId, score);
     }

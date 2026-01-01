@@ -1,4 +1,6 @@
 @baseUrl=http://localhost:8081/api/users/
+@token = {{loginKeycloak.response.body.access_token}}
+@refreshToken = {{loginKeycloak.response.body.refresh_token}}
 
 ### Récupérer l'utilisateur
 GET {{baseUrl}}me
@@ -18,16 +20,12 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=refresh_token&client_id=neo4flix-app&refresh_token={{refreshToken}}
 
-###
-@token = {{loginKeycloak.response.body.access_token}}
-@refreshToken = {{loginKeycloak.response.body.refresh_token}}
-
 ### 2. Envoyer la note avec le Token récupéré
 POST http://localhost:8084/api/rates/
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "movieId": "d2264670-b225-4872-8db5-07807d0a43c0",
+  "movieId": "ddaa11cb-62bc-4d20-9722-7cef5e3f36ae",
   "score": 5
 }
