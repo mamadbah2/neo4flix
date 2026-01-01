@@ -35,7 +35,7 @@ public class RateControllerImpl implements RateController {
         // Appeler le service pour créer la note
         var rate = rateService.createRate(userId, rateRequest.getMovieId(), rateRequest.getScore());
          if (rate == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(null);
         }
         // Mapper l'entité vers le DTO de réponse
         RateResponse response = RateMapper.toDto(rate);

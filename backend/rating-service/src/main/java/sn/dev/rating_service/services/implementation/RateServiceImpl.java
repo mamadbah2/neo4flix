@@ -23,8 +23,9 @@ public class RateServiceImpl implements RateService  {
         }
         System.out.println("++++++++++++++++++++++++++++++++++++++++++");
         System.out.println("Creating rate for userId: " + userId + ", movieId: " + movieId + ", score: " + score);
-
-        return rateRepository.createRate(userId, movieId, score);
+        
+        rateRepository.createRate(userId, movieId, score);
+        return null;
     }
 
     private boolean checkMovieExists(String movieId) {
