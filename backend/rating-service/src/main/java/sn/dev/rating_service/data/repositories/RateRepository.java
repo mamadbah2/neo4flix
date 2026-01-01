@@ -9,6 +9,6 @@ public interface RateRepository extends Neo4jRepository<Rate, String> {
     @Query("MATCH (u:User {keycloakId: $userId}) MATCH (m:Movie {id: $movieId}) " +
         "MERGE (u)-[r:RATED]->(m) " +
         "SET r.score = $score " +
-        "RETURN r")
+        "RETURN r, m")
     Rate createRate(String userId, String movieId, int score); 
 }
