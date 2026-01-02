@@ -1,10 +1,11 @@
 @baseUrl=http://localhost:8081/api/users/
 @baseUrlMovies = http://localhost:8082/api/movies/
 @token = {{loginKeycloak.response.body.access_token}}
+@token = {{refreshTokenKeycloak.response.body.access_token}}
 @refreshToken = {{loginKeycloak.response.body.refresh_token}}
 @id = 641fc921-f7bf-45d7-83b9-dd8069f22b96
 
-### Récupérer l'utilisateur
+### Récupérer l'utilisateur 1
 GET {{baseUrl}}me
 Authorization: Bearer {{token}}
 
@@ -13,7 +14,7 @@ Authorization: Bearer {{token}}
 POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=password&client_id=neo4flix-app&username=mamadbah&password=password123
+grant_type=password&client_id=neo4flix-app&username=cheimbaye&password=password123
 
 ###
 # @name refreshTokenKeycloak
@@ -28,14 +29,17 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "movieId": "641fc921-f7bf-45d7-83b9-dd8069f22b96",
-  "score": 8
+  "movieId": "1ce3fb2a-9cc6-4961-b8b8-16ee6bad05f3",
+  "score": 5
 }
 
 ### Récupérer un film par ID
 GET {{baseUrlMovies}}{{id}}
 Authorization: Bearer {{token}}
 
+### Récupérer les film
+GET {{baseUrlMovies}}
+Authorization: Bearer {{token}}
 
 ### Créer un nouveau film (Inception)
 POST {{baseUrlMovies}}
@@ -43,13 +47,14 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "title": "Inception",
-  "description": "Un voleur qui subtilise des secrets par le biais du rêve.",
-  "releaseYear": 2010,
-  "genres": [
-    {"name": "Action"},
-    {"name": "Sci-Fi"}
-  ]
+    "title": "Star Wars",
+    "description": "Dans une galaxie lointaine, un jeune fermier se lance dans une aventure épique pour sauver la princesse Leia et vaincre l'Empire.",
+    "releaseYear": 1977,
+    "genres": [
+        {"name": "Adventure"},
+        {"name": "Action"},
+        {"name": "Sci-Fi"}
+    ]
 }
 
 ### Obtenir mes recommandations

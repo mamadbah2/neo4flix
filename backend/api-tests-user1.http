@@ -1,0 +1,67 @@
+@baseUrl=http://localhost:8081/api/users/
+@baseUrlMovies = http://localhost:8082/api/movies/
+@token = {{loginKeycloak.response.body.access_token}}
+@token = {{refreshTokenKeycloak.response.body.access_token}}
+@refreshToken = {{loginKeycloak.response.body.refresh_token}}
+@id = 641fc921-f7bf-45d7-83b9-dd8069f22b96
+
+### Récupérer l'utilisateur 1
+GET {{baseUrl}}me
+Authorization: Bearer {{token}}
+
+### 1. Récupérer un Token (Simule le login Angular) avec Keycloak
+# @name loginKeycloak
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=neo4flix-app&username=mamadbah&password=password123
+
+###
+# @name refreshTokenKeycloak
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&client_id=neo4flix-app&refresh_token={{refreshToken}}
+
+### 2. Envoyer la note avec le Token récupéré
+POST http://localhost:8084/api/rates/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "movieId": "641fc921-f7bf-45d7-83b9-dd8069f22b96",
+  "score": 8
+}
+
+### Récupérer un film par ID
+GET {{baseUrlMovies}}{{id}}
+Authorization: Bearer {{token}}
+
+
+### Créer un nouveau film (Inception)
+POST {{baseUrlMovies}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Inception",
+  "description": "Un voleur qui subtilise des secrets par le biais du rêve.",
+  "releaseYear": 2010,
+  "genres": [
+    {"name": "Action"},
+    {"name": "Sci-Fi"}
+  ]
+}
+
+### Obtenir mes recommandations
+GET http://localhost:8083/api/recommendations/
+Authorization: Bearer {{token}}
+
+
+### Obtenir mes recommandations
+GET http://localhost:8082/api/movies/recommendations/genre-based
+Authorization: Bearer {{token}}
+
+### Obtenir mes recommandations
+GET http://localhost:8082/api/movies/recommendations/collaborative
+Authorization: Bearer {{token}}
