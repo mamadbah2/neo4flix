@@ -55,3 +55,12 @@ Content-Type: application/json
 ### Obtenir mes recommandations
 GET http://localhost:8083/api/recommendations/
 Authorization: Bearer {{token}}
+
+
+### Obtenir mes recommandations
+GET http://localhost:8082/api/movies/recommendations/genre-based
+Authorization: Bearer {{token}}
+
+### Obtenir mes recommandations
+GET http://localhost:8082/api/movies/recommendations/collaborative
+Authorization: Bearer {{token}}

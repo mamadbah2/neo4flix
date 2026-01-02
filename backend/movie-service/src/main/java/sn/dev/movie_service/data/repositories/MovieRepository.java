@@ -17,7 +17,7 @@ public interface MovieRepository extends Neo4jRepository<Movie, String> {
     // 2. Selon tes genres préférés (Content-based)
     @Query("MATCH (u:User {keycloakId: $userId})-[r:RATED]->(m:Movie)-[:BELONGS_TO]->(g:Genre) " +
            "WHERE r.score >= 4 " +
-           "WITH g, count(*) as frequency " +
+           "WITH u, g, count(*) as frequency " +
            "ORDER BY frequency DESC LIMIT 2 " +
            "MATCH (rec:Movie)-[:BELONGS_TO]->(g) " +
            "WHERE NOT (u)-[:RATED]->(rec) " +

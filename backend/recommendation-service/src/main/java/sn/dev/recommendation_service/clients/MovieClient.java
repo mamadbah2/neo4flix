@@ -15,9 +15,9 @@ import sn.dev.recommendation_service.web.dto.responses.MovieResponse;
     configuration = FeignConfig.class
 )
 public interface MovieClient {
-    @GetMapping("/recommendations/collaborative")
+    @GetMapping("api/movies/recommendations/collaborative")
     ResponseEntity<List<MovieResponse>> getCollaborativeRecs();
 
-    @GetMapping("/recommendations/genre-based")
+    @GetMapping("api/movies/recommendations/genre-based")
     ResponseEntity<List<MovieResponse>> getGenreBasedRecs();
 }
