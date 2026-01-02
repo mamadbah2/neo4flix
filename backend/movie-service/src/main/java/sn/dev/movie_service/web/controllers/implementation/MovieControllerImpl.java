@@ -3,6 +3,7 @@ package sn.dev.movie_service.web.controllers.implementation;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 
 import sn.dev.movie_service.services.MovieService;
@@ -43,5 +44,25 @@ public class MovieControllerImpl implements MovieController {
         var movie = MovieMapper.fromCreateRequest(request);
         var saved = movieService.createMovie(movie);
         return ResponseEntity.ok(MovieMapper.toResponse(saved));
+    }
+
+     @Override
+    public ResponseEntity<List<MovieResponse>> getCollaborativeRecs(Object principal) {
+        String userId = ((Jwt) principal).getClaimAsString("sub");
+        List<MovieResponse> responses = movieService.getCollaborativeRecs(userId)
+            .stream()
+            .map(MovieMapper::toResponse)
+            .toList();
+        return ResponseEntity.ok(responses);
+    }
+
+    @Override
+    public ResponseEntity<List<MovieResponse>> getGenreBasedRecs(Object principal) {
+        String userId = ((Jwt) principal).getClaimAsString("sub");
+        List<MovieResponse> responses = movieService.getGenreBasedRecs(userId)
+            .stream()
+            .map(MovieMapper::toResponse)
+            .toList();
+        return ResponseEntity.ok(responses);
     }
 }

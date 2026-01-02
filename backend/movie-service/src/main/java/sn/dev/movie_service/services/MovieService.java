@@ -8,4 +8,6 @@ public interface MovieService {
     List<Movie> getAllMovies();
     Movie getMovieById(String id);
     Movie createMovie(Movie movie);
+    List<Movie> getCollaborativeRecs(String userId);
+    List<Movie> getGenreBasedRecs(String userId);
 }

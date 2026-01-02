@@ -21,6 +21,10 @@ spring:
           # URL interne Docker vers ton royaume (realm) Keycloak
           issuer-uri: http://keycloak4flix.duckdns.org/realms/neo4flix
 
+movie:
+  service:
+    url: http://movie-service:8082/
+
 # Pour voir les requêtes Cypher dans la console (Utile pour apprendre !)
 logging:
   level:

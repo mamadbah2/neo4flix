@@ -1,6 +1,8 @@
 @baseUrl=http://localhost:8081/api/users/
+@baseUrlMovies = http://localhost:8082/api/movies/
 @token = {{loginKeycloak.response.body.access_token}}
 @refreshToken = {{loginKeycloak.response.body.refresh_token}}
+@id = 641fc921-f7bf-45d7-83b9-dd8069f22b96
 
 ### Récupérer l'utilisateur
 GET {{baseUrl}}me
@@ -29,3 +31,27 @@ Content-Type: application/json
   "movieId": "641fc921-f7bf-45d7-83b9-dd8069f22b96",
   "score": 8
 }
+
+### Récupérer un film par ID
+GET {{baseUrlMovies}}{{id}}
+Authorization: Bearer {{token}}
+
+
+### Créer un nouveau film (Inception)
+POST {{baseUrlMovies}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Inception",
+  "description": "Un voleur qui subtilise des secrets par le biais du rêve.",
+  "releaseYear": 2010,
+  "genres": [
+    {"name": "Action"},
+    {"name": "Sci-Fi"}
+  ]
+}
+
+### Obtenir mes recommandations
+GET http://localhost:8083/api/recommendations/
+Authorization: Bearer {{token}}

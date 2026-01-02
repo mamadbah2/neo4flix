@@ -30,5 +30,15 @@ public class MovieServiceImpl implements MovieService {
     public Movie createMovie(Movie movie) {
         return movieRepository.save(movie);
     }
+
+     @Override
+    public List<Movie> getCollaborativeRecs(String userId) {
+        return movieRepository.getCollaborativeRecs(userId);
+    }
+
+    @Override
+    public List<Movie> getGenreBasedRecs(String userId) {
+        return movieRepository.getGenreBasedRecs(userId);
+    }
     
 }

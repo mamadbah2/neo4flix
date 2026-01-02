@@ -8,10 +8,10 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import sn.dev.recommendation_service.data.entities.Movie;
+import sn.dev.recommendation_service.web.dto.responses.MovieResponse;
 
 @RequestMapping("/api/recommendations")
 public interface RecommendationController {
     @GetMapping("/")
-    ResponseEntity<List<Movie>> getMyRecs(@AuthenticationPrincipal Jwt jwt);
+    ResponseEntity<List<MovieResponse>> getMyRecs(@AuthenticationPrincipal Jwt jwt);
 }

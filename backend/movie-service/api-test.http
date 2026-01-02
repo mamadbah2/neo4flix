@@ -1,9 +1,6 @@
 ### Variables de base
 @baseUrl = http://localhost:8082/api/movies/
 
-### Récupérer tous les films
-GET {{baseUrl}}
-
 ### Récupérer un film par ID
 @id = 641fc921-f7bf-45d7-83b9-dd8069f22b96
 GET {{baseUrl}}{{id}}

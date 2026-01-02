@@ -1,4 +1,4 @@
-package sn.dev.recommendation_service.data.entities;
+package sn.dev.recommendation_service.web.dto.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,10 +8,9 @@ import lombok.Setter;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Movie {
+public class MovieResponse {
     private String id;
     private String title;
-    private Integer year;
     private String description;
-    // ...
+    private int releaseYear;
 }

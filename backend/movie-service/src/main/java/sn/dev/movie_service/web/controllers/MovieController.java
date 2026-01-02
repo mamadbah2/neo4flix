@@ -3,6 +3,7 @@ package sn.dev.movie_service.web.controllers;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,4 +23,10 @@ public interface MovieController {
 
     @PostMapping("/")
     ResponseEntity<MovieResponse> createMovie(@RequestBody MovieCreateRequest movie);
+
+    @GetMapping("/recommendations/collaborative")
+    ResponseEntity<List<MovieResponse>> getCollaborativeRecs(@AuthenticationPrincipal Object principal);
+
+    @GetMapping("/recommendations/genre-based")
+    ResponseEntity<List<MovieResponse>> getGenreBasedRecs(@AuthenticationPrincipal Object principal);
 }
