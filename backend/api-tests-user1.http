@@ -3,7 +3,8 @@
 @token = {{loginKeycloak.response.body.access_token}}
 @token = {{refreshTokenKeycloak.response.body.access_token}}
 @refreshToken = {{loginKeycloak.response.body.refresh_token}}
-@id = 641fc921-f7bf-45d7-83b9-dd8069f22b96
+@id = 8a6271a9-5bea-4045-aca6-ae0002e75550
+@idMovie = 641fc921-f7bf-45d7-83b9-dd8069f22b96
 
 ### Récupérer l'utilisateur 1
 GET {{baseUrl}}/api/users/me
@@ -73,3 +74,35 @@ Authorization: Bearer {{token}}
 ### test api gateway
 GET {{baseUrl}}/poto
 # Authorization: Bearer {{token}}
+
+### Récupérer la watchlist de l'utilisateur
+GET {{baseUrl}}/api/users/watchlist
+Authorization: Bearer {{token}}
+
+### Ajouter un film à la watchlist
+POST {{baseUrl}}/api/users/watchlist/{{idMovie}}
+Authorization: Bearer {{token}}
+
+### Supprimer un film de la watchlist
+DELETE {{baseUrl}}/api/users/watchlist/{{id}}
+Authorization: Bearer {{token}}
+
+### Suivre un utilisateur
+POST {{baseUrl}}/api/users/follow/{{id}}
+Authorization: Bearer {{token}}
+
+### Ne plus suivre un utilisateur
+DELETE {{baseUrl}}/api/users/follow/{{id}}
+Authorization: Bearer {{token}}
+
+### Liste des abonnements (utilisateurs suivis)
+GET {{baseUrl}}/api/users/following
+Authorization: Bearer {{token}}
+
+### Liste des abonnés
+GET {{baseUrl}}/api/users/followers
+Authorization: Bearer {{token}}
+
+### Vérifier si on suit un utilisateur
+GET {{baseUrl}}/api/users/following/{{id}}
+Authorization: Bearer {{token}}

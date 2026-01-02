@@ -1,0 +1,193 @@
+###############################################################################
+# TEST SOCIAL - Scénario complet de partage entre amis
+# 
+# Ce script simule le parcours suivant :
+# 1. User A (mamadbah) se connecte et récupère son token
+# 2. User B (cheimbaye) se connecte et récupère son token
+# 3. User A suit User B
+# 4. User A ajoute 'Inception' à sa watchlist
+# 5. User A partage 'Inception' avec User B
+# 6. User B appelle /api/recommendations et voit 'Inception' en tête (boost social)
+# 7. Tests d'erreurs (partage sans follow, etc.)
+###############################################################################
+
+@baseUrl = http://localhost:5050
+@movieId = 641fc921-f7bf-45d7-83b9-dd8069f22b96
+
+# Tokens - à récupérer dynamiquement
+@tokenUserA = {{loginUserA.response.body.access_token}}
+@tokenUserB = {{loginUserB.response.body.access_token}}
+@refreshTokenA = {{loginUserA.response.body.refresh_token}}
+@refreshTokenB = {{loginUserB.response.body.refresh_token}}
+
+# IDs utilisateurs (récupérés via /me)
+@userAId = {{getUserA.response.body.id}}
+@userBId = {{getUserB.response.body.id}}
+
+###############################################################################
+# ÉTAPE 1 : AUTHENTIFICATION
+###############################################################################
+
+### 1.1 Login User A (mamadbah)
+# @name loginUserA
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=neo4flix-app&username=mamadbah&password=password123
+
+### 1.2 Login User B (cheimbaye)
+# @name loginUserB
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=neo4flix-app&username=cheimbaye&password=password123
+
+### 1.3 Récupérer les infos de User A
+# @name getUserA
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{tokenUserA}}
+
+### 1.4 Récupérer les infos de User B
+# @name getUserB
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{tokenUserB}}
+
+###############################################################################
+# ÉTAPE 2 : USER A SUIT USER B
+###############################################################################
+
+### 2.1 User A suit User B
+POST {{baseUrl}}/api/users/follow/{{userBId}}
+Authorization: Bearer {{tokenUserA}}
+
+### 2.2 Vérifier que User A suit User B
+GET {{baseUrl}}/api/users/following/{{userBId}}
+Authorization: Bearer {{tokenUserA}}
+
+### 2.3 Voir la liste des following de User A
+GET {{baseUrl}}/api/users/following
+Authorization: Bearer {{tokenUserA}}
+
+### 2.4 Voir les followers de User B (devrait contenir User A)
+GET {{baseUrl}}/api/users/followers
+Authorization: Bearer {{tokenUserB}}
+
+###############################################################################
+# ÉTAPE 3 : USER A AJOUTE INCEPTION À SA WATCHLIST
+###############################################################################
+
+### 3.1 User A ajoute Inception à sa watchlist
+POST {{baseUrl}}/api/users/watchlist/{{movieId}}
+Authorization: Bearer {{tokenUserA}}
+
+### 3.2 Vérifier la watchlist de User A
+GET {{baseUrl}}/api/users/watchlist
+Authorization: Bearer {{tokenUserA}}
+
+###############################################################################
+# ÉTAPE 4 : USER A PARTAGE INCEPTION AVEC USER B
+###############################################################################
+
+### 4.1 User A partage Inception avec User B
+POST {{baseUrl}}/api/recommendations/share
+Authorization: Bearer {{tokenUserA}}
+Content-Type: application/json
+
+{
+  "targetUserId": "{{userBId}}",
+  "movieId": "{{movieId}}"
+}
+
+###############################################################################
+# ÉTAPE 5 : USER B VOIT INCEPTION BOOSTÉ DANS SES RECOMMANDATIONS
+###############################################################################
+
+### 5.1 User B récupère ses recommandations (Inception devrait être en tête grâce au boost social)
+GET {{baseUrl}}/api/recommendations/
+Authorization: Bearer {{tokenUserB}}
+
+### 5.2 User B récupère uniquement les films partagés par ses amis
+GET {{baseUrl}}/api/recommendations/shared
+Authorization: Bearer {{tokenUserB}}
+
+###############################################################################
+# ÉTAPE 6 : TESTS D'ERREURS
+###############################################################################
+
+### 6.1 ERREUR - User B essaie de partager avec User A (qu'il ne suit pas) -> 403 Forbidden
+POST {{baseUrl}}/api/recommendations/share
+Authorization: Bearer {{tokenUserB}}
+Content-Type: application/json
+
+{
+  "targetUserId": "{{userAId}}",
+  "movieId": "{{movieId}}"
+}
+
+### 6.2 ERREUR - Partager avec soi-même -> 400 Bad Request
+POST {{baseUrl}}/api/recommendations/share
+Authorization: Bearer {{tokenUserA}}
+Content-Type: application/json
+
+{
+  "targetUserId": "{{userAId}}",
+  "movieId": "{{movieId}}"
+}
+
+### 6.3 ERREUR - Partager un film inexistant -> 404 Not Found
+POST {{baseUrl}}/api/recommendations/share
+Authorization: Bearer {{tokenUserA}}
+Content-Type: application/json
+
+{
+  "targetUserId": "{{userBId}}",
+  "movieId": "non-existent-movie-id"
+}
+
+### 6.4 ERREUR - Requête sans targetUserId -> 400 Bad Request (validation)
+POST {{baseUrl}}/api/recommendations/share
+Authorization: Bearer {{tokenUserA}}
+Content-Type: application/json
+
+{
+  "movieId": "{{movieId}}"
+}
+
+### 6.5 ERREUR - Requête sans movieId -> 400 Bad Request (validation)
+POST {{baseUrl}}/api/recommendations/share
+Authorization: Bearer {{tokenUserA}}
+Content-Type: application/json
+
+{
+  "targetUserId": "{{userBId}}"
+}
+
+###############################################################################
+# ÉTAPE 7 : NETTOYAGE (OPTIONNEL)
+###############################################################################
+
+### 7.1 User A unfollow User B
+DELETE {{baseUrl}}/api/users/follow/{{userBId}}
+Authorization: Bearer {{tokenUserA}}
+
+### 7.2 User A supprime Inception de sa watchlist
+DELETE {{baseUrl}}/api/users/watchlist/{{movieId}}
+Authorization: Bearer {{tokenUserA}}
+
+###############################################################################
+# BONUS : REFRESH TOKENS
+###############################################################################
+
+### Refresh token User A
+# @name refreshUserA
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&client_id=neo4flix-app&refresh_token={{refreshTokenA}}
+
+### Refresh token User B
+# @name refreshUserB
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&client_id=neo4flix-app&refresh_token={{refreshTokenB}}
