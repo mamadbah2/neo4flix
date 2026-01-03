@@ -1,11 +1,15 @@
 package sn.dev.recommendation_service.web.dto.requests;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Requête pour partager un film avec un ami.
+ */
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,6 +18,6 @@ public class ShareRequest {
     @NotBlank(message = "targetUserId est requis")
     private String targetUserId;
     
-    @NotBlank(message = "movieId est requis")
-    private String movieId;
+    @NotNull(message = "tmdbId est requis")
+    private Long tmdbId;
 }

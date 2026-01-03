@@ -7,19 +7,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import sn.dev.user_service.services.WatchlistService;
 import sn.dev.user_service.web.controllers.WatchlistController;
 import sn.dev.user_service.web.dto.responses.MovieResponse;
 import sn.dev.user_service.web.mappers.MovieMapper;
 
+/**
+ * Implémentation du contrôleur Watchlist.
+ */
 @RestController
+@RequiredArgsConstructor
 public class WatchlistControllerImpl implements WatchlistController {
 
     private final WatchlistService watchlistService;
-
-    public WatchlistControllerImpl(WatchlistService watchlistService) {
-        this.watchlistService = watchlistService;
-    }
 
     @Override
     public ResponseEntity<List<MovieResponse>> getWatchlist(@AuthenticationPrincipal Jwt jwt) {
@@ -32,16 +33,16 @@ public class WatchlistControllerImpl implements WatchlistController {
     }
 
     @Override
-    public ResponseEntity<Void> addToWatchlist(@AuthenticationPrincipal Jwt jwt, String movieId) {
+    public ResponseEntity<Void> addToWatchlist(@AuthenticationPrincipal Jwt jwt, Long tmdbId) {
         String userId = jwt.getClaimAsString("sub");
-        watchlistService.addToWatchlist(userId, movieId);
+        watchlistService.addToWatchlist(userId, tmdbId);
         return ResponseEntity.ok().build();
     }
 
     @Override
-    public ResponseEntity<Void> removeFromWatchlist(@AuthenticationPrincipal Jwt jwt, String movieId) {
+    public ResponseEntity<Void> removeFromWatchlist(@AuthenticationPrincipal Jwt jwt, Long tmdbId) {
         String userId = jwt.getClaimAsString("sub");
-        watchlistService.removeFromWatchlist(userId, movieId);
+        watchlistService.removeFromWatchlist(userId, tmdbId);
         return ResponseEntity.noContent().build();
     }
 }

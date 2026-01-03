@@ -1,4 +1,4 @@
-package sn.dev.user_service.web.dto.responses;
+package sn.dev.movie_service.web.dto.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,15 +7,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * DTO de réponse pour un film dans le user-service.
- * Version légère avec les informations stockées dans Neo4j.
+ * DTO de réponse pour la synchronisation d'un film.
  */
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MovieResponse {
+public class SyncResponse {
+    
     private Long tmdbId;
     private String title;
-    private String posterPath;
+    private Boolean created;
+    private String message;
 }

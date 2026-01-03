@@ -9,6 +9,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RateRequest {
-    private String movieId;
+    private Long tmdbId;
     private int score;
 }

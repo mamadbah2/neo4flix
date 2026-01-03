@@ -8,7 +8,11 @@ import org.springframework.data.repository.query.Param;
 
 import sn.dev.recommendation_service.data.entities.Movie;
 
-public interface ShareRepository extends Neo4jRepository<Movie, String> {
+/**
+ * Repository pour la gestion des partages de films.
+ * Utilise tmdbId comme identifiant de film.
+ */
+public interface ShareRepository extends Neo4jRepository<Movie, Long> {
 
     /**
      * Crée une relation de partage : l'utilisateur recommande un film à un ami qu'il suit.
@@ -16,15 +20,15 @@ public interface ShareRepository extends Neo4jRepository<Movie, String> {
      */
     @Query("""
             MATCH (me:User {keycloakId: $userId})-[:FOLLOWS]->(friend:User {keycloakId: $targetUserId})
-            MATCH (m:Movie {id: $movieId})
-            MERGE (me)-[s:SHARED_WITH {at: datetime()}]->(sr:SharedRecommendation {movieId: $movieId, fromUserId: $userId, toUserId: $targetUserId})
+            MATCH (m:Movie {tmdbId: $tmdbId})
+            MERGE (me)-[s:SHARED_WITH {at: datetime()}]->(sr:SharedRecommendation {tmdbId: $tmdbId, fromUserId: $userId, toUserId: $targetUserId})
             MERGE (sr)-[:RECOMMENDS]->(m)
             MERGE (sr)-[:FOR]->(friend)
             RETURN COUNT(sr) > 0
             """)
     boolean shareMovieWithFriend(@Param("userId") String userId, 
                                   @Param("targetUserId") String targetUserId, 
-                                  @Param("movieId") String movieId);
+                                  @Param("tmdbId") Long tmdbId);
 
     /**
      * Vérifie si l'utilisateur suit bien la cible.
@@ -44,18 +48,18 @@ public interface ShareRepository extends Neo4jRepository<Movie, String> {
     List<Movie> findSharedMoviesForUser(@Param("userId") String userId);
 
     /**
-     * Récupère les IDs des films partagés avec l'utilisateur pour le boost.
+     * Récupère les IDs TMDb des films partagés avec l'utilisateur pour le boost.
      */
     @Query("""
             MATCH (friend:User)-[:SHARED_WITH]->(sr:SharedRecommendation)-[:FOR]->(me:User {keycloakId: $userId})
             MATCH (sr)-[:RECOMMENDS]->(m:Movie)
-            RETURN DISTINCT m.id
+            RETURN DISTINCT m.tmdbId
             """)
-    List<String> findSharedMovieIdsForUser(@Param("userId") String userId);
+    List<Long> findSharedMovieTmdbIdsForUser(@Param("userId") String userId);
 
     /**
      * Vérifie si le film existe dans la base Neo4j.
      */
-    @Query("MATCH (m:Movie {id: $movieId}) RETURN COUNT(m) > 0")
-    boolean movieExists(@Param("movieId") String movieId);
+    @Query("MATCH (m:Movie {tmdbId: $tmdbId}) RETURN COUNT(m) > 0")
+    boolean movieExists(@Param("tmdbId") Long tmdbId);
 }

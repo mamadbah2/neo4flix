@@ -15,6 +15,10 @@ import sn.dev.recommendation_service.data.repositories.ShareRepository;
 import sn.dev.recommendation_service.services.RecommendationService;
 import sn.dev.recommendation_service.web.dto.responses.MovieResponse;
 
+/**
+ * Implémentation du service de recommandations.
+ * Combine les recommandations TMDb avec le boost social (films partagés par amis).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -27,11 +31,11 @@ public class RecommendationServiceImpl implements RecommendationService {
     public List<MovieResponse> getRecommendations(String userId) {
         // 1. Récupérer les films partagés par des amis (PRIORITÉ MAXIMALE - Boost Social)
         List<Movie> sharedMovies = shareRepository.findSharedMoviesForUser(userId);
-        Set<String> sharedMovieIds = new LinkedHashSet<>();
+        Set<Long> sharedMovieIds = new LinkedHashSet<>();
         List<MovieResponse> boostedMovies = new ArrayList<>();
         
         for (Movie movie : sharedMovies) {
-            sharedMovieIds.add(movie.getId());
+            sharedMovieIds.add(movie.getTmdbId());
             boostedMovies.add(toMovieResponse(movie));
         }
 
@@ -51,13 +55,13 @@ public class RecommendationServiceImpl implements RecommendationService {
         for (int i = 0; i < maxSize; i++) {
             if (collaborative != null && i < collaborative.size()) {
                 MovieResponse movie = collaborative.get(i);
-                if (!sharedMovieIds.contains(movie.getId())) {
+                if (!sharedMovieIds.contains(movie.getTmdbId())) {
                     combined.add(movie);
                 }
             }
             if (genreBased != null && i < genreBased.size()) {
                 MovieResponse movie = genreBased.get(i);
-                if (!sharedMovieIds.contains(movie.getId())) {
+                if (!sharedMovieIds.contains(movie.getTmdbId())) {
                     combined.add(movie);
                 }
             }
@@ -76,11 +80,10 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
     private MovieResponse toMovieResponse(Movie movie) {
-        return new MovieResponse(
-            movie.getId(),
-            movie.getTitle(),
-            movie.getDescription(),
-            movie.getYear()
-        );
+        return MovieResponse.builder()
+            .tmdbId(movie.getTmdbId())
+            .title(movie.getTitle())
+            .posterPath(movie.getPosterPath())
+            .build();
     }
 }

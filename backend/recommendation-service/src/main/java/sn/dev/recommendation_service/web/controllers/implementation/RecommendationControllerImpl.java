@@ -13,6 +13,9 @@ import sn.dev.recommendation_service.web.controllers.RecommendationController;
 import sn.dev.recommendation_service.web.dto.requests.ShareRequest;
 import sn.dev.recommendation_service.web.dto.responses.MovieResponse;
 
+/**
+ * Implémentation du contrôleur de recommandations.
+ */
 @RestController
 @RequiredArgsConstructor
 public class RecommendationControllerImpl implements RecommendationController {
@@ -37,7 +40,7 @@ public class RecommendationControllerImpl implements RecommendationController {
     @Override
     public ResponseEntity<Void> shareMovie(Jwt jwt, ShareRequest request) {
         String userId = jwt.getClaimAsString("sub");
-        shareService.shareMovie(userId, request.getTargetUserId(), request.getMovieId());
+        shareService.shareMovie(userId, request.getTargetUserId(), request.getTmdbId());
         return ResponseEntity.ok().build();
     }
 }

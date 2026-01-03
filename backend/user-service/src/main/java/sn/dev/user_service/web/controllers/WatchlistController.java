@@ -13,15 +13,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import sn.dev.user_service.web.dto.responses.MovieResponse;
 
+/**
+ * Contrôleur pour la gestion des watchlists.
+ * Utilise tmdbId comme identifiant de film.
+ */
 @RequestMapping("/api/users/watchlist")
 public interface WatchlistController {
 
     @GetMapping
     ResponseEntity<List<MovieResponse>> getWatchlist(@AuthenticationPrincipal Jwt jwt);
 
-    @PostMapping("/{movieId}")
-    ResponseEntity<Void> addToWatchlist(@AuthenticationPrincipal Jwt jwt, @PathVariable String movieId);
+    @PostMapping("/{tmdbId}")
+    ResponseEntity<Void> addToWatchlist(@AuthenticationPrincipal Jwt jwt, @PathVariable Long tmdbId);
 
-    @DeleteMapping("/{movieId}")
-    ResponseEntity<Void> removeFromWatchlist(@AuthenticationPrincipal Jwt jwt, @PathVariable String movieId);
+    @DeleteMapping("/{tmdbId}")
+    ResponseEntity<Void> removeFromWatchlist(@AuthenticationPrincipal Jwt jwt, @PathVariable Long tmdbId);
 }

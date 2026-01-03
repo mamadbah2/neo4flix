@@ -1,0 +1,276 @@
+###############################################################################
+# TEST API - Movie Service avec TMDb Integration
+# 
+# Ce script teste tous les endpoints du movie-service refactorisé :
+# - Discovery endpoints (TMDb direct, pas de stockage Neo4j)
+# - Détails d'un film avec enrichissement TMDb
+# - Synchronisation lazy dans Neo4j
+# - Recommandations (collaboratives et par genre)
+#
+# Prérequis : 
+# - movie-service démarré sur le port 8082
+# - Token Keycloak valide pour les endpoints authentifiés
+###############################################################################
+
+@baseUrl = http://localhost:8082
+@gatewayUrl = http://localhost:5050
+
+# Token à récupérer dynamiquement
+@token = {{login.response.body.access_token}}
+
+###############################################################################
+# ÉTAPE 0 : AUTHENTIFICATION
+###############################################################################
+
+### 0.1 Login pour obtenir un token
+# @name login
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=neo4flix-app&username=mamadbah&password=password123
+
+###############################################################################
+# ÉTAPE 1 : DISCOVERY ENDPOINTS (TMDb Direct - Pas de stockage Neo4j)
+###############################################################################
+
+### 1.1 Films tendances de la semaine
+# Source: TMDb /trending/movie/week
+# Ne stocke rien dans Neo4j
+GET {{baseUrl}}/api/movies/discovery/trending
+Accept: application/json
+
+### 1.2 Films tendances - Page 2
+GET {{baseUrl}}/api/movies/discovery/trending?page=2&language=fr-FR
+Accept: application/json
+
+### 1.3 Films les mieux notés (Classiques)
+# Source: TMDb /movie/top_rated
+GET {{baseUrl}}/api/movies/discovery/top-rated
+Accept: application/json
+
+### 1.4 Films les mieux notés - En anglais
+GET {{baseUrl}}/api/movies/discovery/top-rated?language=en-US
+Accept: application/json
+
+### 1.5 Films actuellement à l'affiche
+# Source: TMDb /movie/now_playing
+GET {{baseUrl}}/api/movies/discovery/now-playing
+Accept: application/json
+
+### 1.6 Films à l'affiche - Page 3
+GET {{baseUrl}}/api/movies/discovery/now-playing?page=3&language=fr-FR
+Accept: application/json
+
+###############################################################################
+# ÉTAPE 2 : RECHERCHE DE FILMS
+###############################################################################
+
+### 2.1 Recherche - Inception
+GET {{baseUrl}}/api/movies/search?query=Inception
+Accept: application/json
+
+### 2.2 Recherche - The Matrix
+GET {{baseUrl}}/api/movies/search?query=The%20Matrix&language=en-US
+Accept: application/json
+
+### 2.3 Recherche - Film français
+GET {{baseUrl}}/api/movies/search?query=Intouchables&language=fr-FR
+Accept: application/json
+
+### 2.4 Recherche paginée
+GET {{baseUrl}}/api/movies/search?query=Star%20Wars&page=2
+Accept: application/json
+
+###############################################################################
+# ÉTAPE 3 : DÉTAILS D'UN FILM
+###############################################################################
+
+### 3.1 Détails de Inception (TMDb ID: 27205)
+# Enrichit avec les données TMDb en temps réel
+# Vérifie si le film est synchronisé dans Neo4j
+GET {{baseUrl}}/api/movies/27205
+Accept: application/json
+
+### 3.2 Détails de The Dark Knight (TMDb ID: 155)
+GET {{baseUrl}}/api/movies/155?language=fr-FR
+Accept: application/json
+
+### 3.3 Détails de Interstellar (TMDb ID: 157336)
+GET {{baseUrl}}/api/movies/157336
+Accept: application/json
+
+### 3.4 Film inexistant (doit retourner 404)
+GET {{baseUrl}}/api/movies/999999999
+Accept: application/json
+
+###############################################################################
+# ÉTAPE 4 : SYNCHRONISATION LAZY (Crée le nœud Movie dans Neo4j)
+###############################################################################
+
+### 4.1 Sync Inception (TMDb ID: 27205)
+# MERGE Cypher : crée le nœud Movie et les relations IN_GENRE si absent
+POST {{baseUrl}}/api/movies/27205/sync
+Accept: application/json
+
+### 4.2 Sync The Dark Knight (TMDb ID: 155)
+POST {{baseUrl}}/api/movies/155/sync
+Accept: application/json
+
+### 4.3 Sync Interstellar (TMDb ID: 157336)
+POST {{baseUrl}}/api/movies/157336/sync
+Accept: application/json
+
+### 4.4 Sync Pulp Fiction (TMDb ID: 680)
+POST {{baseUrl}}/api/movies/680/sync
+Accept: application/json
+
+### 4.5 Sync The Matrix (TMDb ID: 603)
+POST {{baseUrl}}/api/movies/603/sync
+Accept: application/json
+
+### 4.6 Re-sync d'un film déjà synchronisé (doit retourner created=false)
+POST {{baseUrl}}/api/movies/27205/sync
+Accept: application/json
+
+### 4.7 Sync film inexistant (doit retourner 404)
+POST {{baseUrl}}/api/movies/999999999/sync
+Accept: application/json
+
+###############################################################################
+# ÉTAPE 5 : ENDPOINT INTERNE (Pour les autres services)
+###############################################################################
+
+### 5.1 Internal Sync - Appelé par user-service/rating-service
+POST {{baseUrl}}/internal/movies/27205/sync
+Accept: application/json
+
+### 5.2 Internal Sync - Nouveau film
+POST {{baseUrl}}/internal/movies/550/sync
+Accept: application/json
+
+###############################################################################
+# ÉTAPE 6 : RECOMMANDATIONS (Authentification requise)
+###############################################################################
+
+### 6.1 Recommandations collaboratives
+# Basées sur les films aimés par des utilisateurs similaires
+GET {{baseUrl}}/api/movies/recommendations/collaborative
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### 6.2 Recommandations collaboratives - En anglais
+GET {{baseUrl}}/api/movies/recommendations/collaborative?language=en-US
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### 6.3 Recommandations basées sur les genres
+# Basées sur les genres préférés de l'utilisateur
+GET {{baseUrl}}/api/movies/recommendations/genre-based
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### 6.4 Recommandations genre-based - En anglais
+GET {{baseUrl}}/api/movies/recommendations/genre-based?language=en-US
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###############################################################################
+# ÉTAPE 7 : TESTS VIA API GATEWAY
+###############################################################################
+
+### 7.1 Discovery trending via Gateway
+GET {{gatewayUrl}}/api/movies/discovery/trending
+Accept: application/json
+
+### 7.2 Recherche via Gateway
+GET {{gatewayUrl}}/api/movies/search?query=Avatar
+Accept: application/json
+
+### 7.3 Détails via Gateway
+GET {{gatewayUrl}}/api/movies/27205
+Accept: application/json
+
+### 7.4 Sync via Gateway
+POST {{gatewayUrl}}/api/movies/27205/sync
+Accept: application/json
+
+###############################################################################
+# ÉTAPE 8 : TESTS WATCHLIST (User Service)
+###############################################################################
+
+### 8.1 Ajouter Inception à la watchlist
+# Le user-service appelle automatiquement /internal/movies/{tmdbId}/sync
+POST {{baseUrl}}/api/users/watchlist/27205
+Authorization: Bearer {{token}}
+
+### 8.2 Ajouter The Dark Knight à la watchlist
+POST {{baseUrl}}/api/users/watchlist/155
+Authorization: Bearer {{token}}
+
+### 8.3 Voir ma watchlist
+GET {{baseUrl}}/api/users/watchlist
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### 8.4 Retirer un film de la watchlist
+DELETE {{baseUrl}}/api/users/watchlist/27205
+Authorization: Bearer {{token}}
+
+###############################################################################
+# ÉTAPE 9 : VÉRIFICATION NEO4J (Requêtes Cypher manuelles)
+###############################################################################
+
+# Pour vérifier dans Neo4j Browser :
+#
+# 1. Voir tous les films synchronisés :
+#    MATCH (m:Movie) RETURN m
+#
+# 2. Voir les films avec leurs genres :
+#    MATCH (m:Movie)-[:IN_GENRE]->(g:Genre) RETURN m, g
+#
+# 3. Voir la watchlist d'un utilisateur :
+#    MATCH (u:User)-[:WATCHLIST]->(m:Movie) RETURN u, m
+#
+# 4. Compter les films par genre :
+#    MATCH (g:Genre)<-[:IN_GENRE]-(m:Movie) 
+#    RETURN g.name, count(m) as count 
+#    ORDER BY count DESC
+#
+# 5. Films les plus populaires dans les watchlists :
+#    MATCH (u:User)-[:WATCHLIST]->(m:Movie)
+#    RETURN m.title, count(u) as watchlistCount
+#    ORDER BY watchlistCount DESC
+
+###############################################################################
+# NOTES IMPORTANTES
+###############################################################################
+#
+# 1. ARCHITECTURE :
+#    - TMDb = Source de vérité pour les informations de films
+#    - Neo4j = Stockage minimal des relations (WATCHLIST, RATED, IN_GENRE)
+#    - Les endpoints Discovery ne stockent RIEN dans Neo4j
+#
+# 2. SYNCHRONISATION LAZY :
+#    - Les films sont créés dans Neo4j uniquement quand nécessaire
+#    - Appel automatique par user-service/rating-service avant WATCHLIST/RATED
+#    - Utilise MERGE Cypher pour éviter les doublons
+#
+# 3. IDs IMPORTANTS (TMDb) :
+#    - 27205 : Inception
+#    - 155   : The Dark Knight
+#    - 157336: Interstellar
+#    - 680   : Pulp Fiction
+#    - 603   : The Matrix
+#    - 550   : Fight Club
+#    - 238   : The Godfather
+#    - 278   : The Shawshank Redemption
+#
+# 4. GENRES TMDb :
+#    - 28    : Action
+#    - 12    : Adventure
+#    - 16    : Animation
+#    - 35    : Comedy
+#    - 80    : Crime
+#    - 18    : Drama
+#    - 878   : Science Fiction
+#    - 53    : Thriller

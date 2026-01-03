@@ -1,31 +1,38 @@
 package sn.dev.movie_service.data.entities;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
-import org.springframework.data.neo4j.core.support.UUIDStringGenerator;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Entité Movie minimaliste stockée dans Neo4j.
+ * TMDb est la source de vérité - Neo4j ne stocke que les relations.
+ */
 @Node("Movie")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Movie {
+    
     @Id
-    @GeneratedValue(generatorClass = UUIDStringGenerator.class)
-    private String id;
+    private Long tmdbId;
+    
     private String title;
-    private int year;
-    private String description;
+    
+    private String posterPath;
 
-    @Relationship(type="BELONGS_TO", direction = Relationship.Direction.OUTGOING)
-    private List<Genre> genres;
+    @Relationship(type = "IN_GENRE", direction = Relationship.Direction.OUTGOING)
+    @Builder.Default
+    private Set<Genre> genres = new HashSet<>();
 }

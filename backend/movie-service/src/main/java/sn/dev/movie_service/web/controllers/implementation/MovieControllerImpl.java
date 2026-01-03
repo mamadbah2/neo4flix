@@ -6,63 +6,77 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import sn.dev.movie_service.services.MovieService;
 import sn.dev.movie_service.web.controllers.MovieController;
-import sn.dev.movie_service.web.dto.requests.MovieCreateRequest;
+import sn.dev.movie_service.web.dto.responses.MoviePageResponse;
 import sn.dev.movie_service.web.dto.responses.MovieResponse;
-import sn.dev.movie_service.web.mappers.MovieMapper;
+import sn.dev.movie_service.web.dto.responses.SyncResponse;
 
+/**
+ * Implémentation du contrôleur Movie.
+ */
 @RestController
+@RequiredArgsConstructor
 public class MovieControllerImpl implements MovieController {
 
     private final MovieService movieService;
 
-    public MovieControllerImpl(MovieService movieService) {
-        this.movieService = movieService;
+    // ================== DISCOVERY ENDPOINTS ==================
+
+    @Override
+    public ResponseEntity<MoviePageResponse> getTrendingMovies(String language, Integer page) {
+        MoviePageResponse response = movieService.getTrendingMovies(language, page);
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<List<MovieResponse>> getAllMovies() {
-        List<MovieResponse> responses = movieService.getAllMovies()
-            .stream()
-            .map(MovieMapper::toResponse)
-            .toList();
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<MoviePageResponse> getTopRatedMovies(String language, Integer page) {
+        MoviePageResponse response = movieService.getTopRatedMovies(language, page);
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<MovieResponse> getMovieById(String id) {
-        var movie = movieService.getMovieById(id);
-        if (movie == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(MovieMapper.toResponse(movie));
+    public ResponseEntity<MoviePageResponse> getNowPlayingMovies(String language, Integer page) {
+        MoviePageResponse response = movieService.getNowPlayingMovies(language, page);
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<MovieResponse> createMovie(MovieCreateRequest request) {
-        var movie = MovieMapper.fromCreateRequest(request);
-        var saved = movieService.createMovie(movie);
-        return ResponseEntity.ok(MovieMapper.toResponse(saved));
+    public ResponseEntity<MoviePageResponse> searchMovies(String query, String language, Integer page) {
+        MoviePageResponse response = movieService.searchMovies(query, language, page);
+        return ResponseEntity.ok(response);
     }
 
-     @Override
-    public ResponseEntity<List<MovieResponse>> getCollaborativeRecs(Object principal) {
+    // ================== SINGLE MOVIE ==================
+
+    @Override
+    public ResponseEntity<MovieResponse> getMovieDetails(Long tmdbId, String language) {
+        MovieResponse response = movieService.getMovieDetails(tmdbId, language);
+        return ResponseEntity.ok(response);
+    }
+
+    // ================== SYNC ENDPOINT ==================
+
+    @Override
+    public ResponseEntity<SyncResponse> syncMovie(Long tmdbId) {
+        SyncResponse response = movieService.syncMovie(tmdbId);
+        return ResponseEntity.ok(response);
+    }
+
+    // ================== RECOMMENDATIONS ==================
+
+    @Override
+    public ResponseEntity<List<MovieResponse>> getCollaborativeRecs(Object principal, String language) {
         String userId = ((Jwt) principal).getClaimAsString("sub");
-        List<MovieResponse> responses = movieService.getCollaborativeRecs(userId)
-            .stream()
-            .map(MovieMapper::toResponse)
-            .toList();
-        return ResponseEntity.ok(responses);
+        List<MovieResponse> recommendations = movieService.getCollaborativeRecs(userId, language);
+        return ResponseEntity.ok(recommendations);
     }
 
     @Override
-    public ResponseEntity<List<MovieResponse>> getGenreBasedRecs(Object principal) {
+    public ResponseEntity<List<MovieResponse>> getGenreBasedRecs(Object principal, String language) {
         String userId = ((Jwt) principal).getClaimAsString("sub");
-        List<MovieResponse> responses = movieService.getGenreBasedRecs(userId)
-            .stream()
-            .map(MovieMapper::toResponse)
-            .toList();
-        return ResponseEntity.ok(responses);
+        List<MovieResponse> recommendations = movieService.getGenreBasedRecs(userId, language);
+        return ResponseEntity.ok(recommendations);
     }
 }
