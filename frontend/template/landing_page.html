@@ -198,15 +198,18 @@
                 abonnement.
             </p>
             <div class="w-full max-w-3xl mx-auto animate-slide-up">
-                <div class="flex flex-col md:flex-row gap-3 items-stretch justify-center">
-
+                <form action="login.html" class="flex flex-col md:flex-row gap-3 items-stretch justify-center">
+                    <div class="relative flex-grow text-left">
+                        <input type="email" id="email" class="block w-full h-14 md:h-16 px-5 pt-5 pb-2 text-white bg-black/50 rounded border border-gray-500 focus:border-white focus:ring-2 focus:ring-white/20 peer appearance-none" placeholder=" " />
+                        <label for="email" class="absolute text-gray-400 duration-200 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Adresse e-mail</label>
+                    </div>
                     <button
-                        class="h-14 md:h-16 px-8 bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-white text-xl font-bold rounded-lg flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg shadow-primary/30 whitespace-nowrap duration-200"
+                        class="h-14 md:h-16 px-8 bg-primary hover:bg-red-700 text-white text-xl font-bold rounded-lg flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg shadow-primary/30 whitespace-nowrap duration-200"
                         type="submit">
                         Commencer
                         <span class="material-icons text-2xl">chevron_right</span>
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     </main>
