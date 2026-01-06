@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Neo4flix - S'identifier</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#E50914",
+                        "netflix-dark": "rgba(0, 0, 0, 0.25)", /* Ajusté à 25% pour la carte */
+                    },
+                    fontFamily: {
+                        display: ["'Inter'", "sans-serif"],
+                        body: ["'Inter'", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <style>
+        .grid-overlay {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            z-index: 0;
+            opacity: 0.8;
+            /* Opacité de la grille augmentée pour une visibilité maximale */
+            transform: rotate(-15deg);
+            pointer-events: none;
+            overflow: hidden
+        }
+
+        .poster-item {
+            background-size: cover;
+            background-position: center;
+            border-radius: 4px;
+            aspect-ratio: 2/3;
+            filter: brightness(0.7);
+            /* Légèrement plus lumineux */
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white font-body overflow-x-hidden min-h-screen flex flex-col relative">
+
+    <!-- Arrière-plan avec les posters (Visibilité maximale) -->
+    <div class="fixed inset-0 z-0 bg-black overflow-hidden">
+        <div class="grid-overlay">
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1011/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1012/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1015/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1016/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1021/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1022/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1024/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1025/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1027/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1033/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1035/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1037/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1040/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1041/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1042/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1043/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1044/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1045/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1049/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1050/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1051/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1052/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1053/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1054/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1055/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1056/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1057/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1058/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1059/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1060/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1061/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1062/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1063/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1064/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1065/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1066/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1041/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1042/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1043/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1044/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1045/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1049/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1050/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1051/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1052/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1053/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1054/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1055/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1056/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1057/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1058/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1059/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1060/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1061/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1062/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1063/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1064/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1065/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1066/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1058/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1059/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1060/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1061/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1062/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1063/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1064/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1065/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1066/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1024/300/450');"></div>
+        </div>
+        <!-- Overlay noir réduit à 25% -->
+        <div class="absolute inset-0 bg-black/25 z-10"></div>
+    </div>
+
+    <!-- Header Logo -->
+    <nav class="relative z-20 w-full px-6 py-6 md:px-12">
+        <a class="text-4xl font-black text-primary tracking-tighter uppercase font-display" href="#">
+            Neo4flix
+        </a>
+    </nav>
+
+    <!-- Formulaire Central -->
+    <main class="relative z-20 flex-grow flex items-center justify-center px-4 pb-20">
+        <!-- Carte avec fond à 25% d'opacité -->
+        <div
+            class="bg-black/25 md:bg-netflix-dark w-full max-w-[450px] p-8 md:p-16 rounded-md shadow-2xl backdrop-blur-sm border border-white/5">
+            <h1 class="text-3xl font-bold mb-8">S'identifier</h1>
+
+            <form action="#" class="space-y-4">
+                <!-- Champ Email avec fond Noir Opacité 50% pour la lisibilité -->
+                <div class="relative">
+                    <input type="text" id="login" placeholder=" "
+                        class="block w-full px-5 pt-6 pb-2 text-white bg-black/50 rounded border-0 focus:ring-2 focus:ring-white/50 peer appearance-none" />
+                    <label for="login"
+                        class="absolute text-[#8c8c8c] duration-200 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">
+                        E-mail ou numéro de téléphone
+                    </label>
+                </div>
+
+                <!-- Champ Mot de passe avec fond Noir Opacité 50% -->
+                <div class="relative">
+                    <input type="password" id="password" placeholder=" "
+                        class="block w-full px-5 pt-6 pb-2 text-white bg-black/50 rounded border-0 focus:ring-2 focus:ring-white/50 peer appearance-none" />
+                    <label for="password"
+                        class="absolute text-[#8c8c8c] duration-200 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">
+                        Mot de passe
+                    </label>
+                </div>
+
+                <!-- Bouton Connexion -->
+                <button type="submit"
+                    class="w-full bg-primary hover:bg-red-700 text-white font-bold py-3.5 rounded transition-colors mt-6 shadow-lg">
+                    S'identifier
+                </button>
+
+                <!-- Options -->
+                <div class="flex items-center justify-between text-xs text-[#b3b3b3] mt-2">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="remember"
+                            class="rounded bg-[#737373] border-none text-[#737373] focus:ring-0 mr-1 w-4 h-4">
+                        <label for="remember" class="cursor-pointer">Se souvenir de moi</label>
+                    </div>
+                    <a href="#" class="hover:underline">Besoin d'aide ?</a>
+                </div>
+            </form>
+
+            <!-- Pied du formulaire -->
+            <div class="mt-16 text-[#737373]">
+                <p class="text-base">
+                    Première visite sur Neo4flix ?
+                    <a href="#" class="text-white hover:underline font-medium">S'inscrire maintenant</a>.
+                </p>
+                <p class="text-xs mt-4 leading-tight">
+                    Cette page est protégée par Google reCAPTCHA pour nous assurer que vous n'êtes pas un robot.
+                    <a href="#" class="text-[#0071eb] hover:underline">En savoir plus.</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Minimaliste -->
+    <footer class="relative z-20 bg-black/70 text-[#737373] py-10 px-6 md:px-12 border-t border-white/10 mt-auto">
+        <div class="max-w-4xl mx-auto">
+            <p class="mb-6 hover:underline cursor-pointer">Des questions ? Appelez le 0805-543-064</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                <a href="#" class="hover:underline">FAQ</a>
+                <a href="#" class="hover:underline">Conditions d'utilisation</a>
+                <a href="#" class="hover:underline">Confidentialité</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

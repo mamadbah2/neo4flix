@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Neo4flix - Films et séries en illimité</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#E50914", // Netflix-like red, bold and iconic for streaming
+                        "background-light": "#ffffff",
+                        "background-dark": "#000000",
+                        "secondary-dark": "#141414",
+                    },
+                    fontFamily: {
+                        display: ["'Inter'", "sans-serif"],
+                        body: ["'Inter'", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "4px",
+                        'lg': "8px",
+                    },
+                    backgroundImage: {
+                        'poster-grid': "url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80')",
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 1s ease-out',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            },
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <style>
+        .poster-bg {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.85)), url(https://lh3.googleusercontent.com/aida-public/AB6AXuCgTzPUwjr0VHeCqkhQ540ZiihywGIHEC-7OlIsmt0ycwVHkS4JrJ_XU2Aaz0taJdz9v1y1rbnjRrUUQXrEFEPhHdnM2JlFoS5EgnFYtRpqpzS6C3bcjTKUTJjDltszDUzefown1nFPCKjTlnc2JCbfFWke5JgnNjsCt8r6lONdMKXmeU8ok3MOpK8NJgCOYIQKxlpIbVILjk_wmRsA6jTTfxbGjeWQ0o9GaYumwzWMqJFyOtJ4XRZfVuSv0wuZ0b-6eSxq4W-v1656);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat
+        }
+
+        .grid-overlay {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            z-index: 0;
+            opacity: 0.4;
+            transform: rotate(-15deg);
+            pointer-events: none;
+            overflow: hidden
+        }
+
+        .poster-item {
+            background-size: cover;
+            background-position: center;
+            border-radius: 4px;
+            aspect-ratio: 2/3;
+            filter: brightness(0.7);
+            /* Légèrement plus lumineux */
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white font-body overflow-x-hidden min-h-screen flex flex-col relative">
+    <!-- Arrière-plan avec les posters (Visibilité maximale) -->
+    <div class="fixed inset-0 z-0 bg-black overflow-hidden">
+        <div class="grid-overlay">
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1011/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1012/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1015/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1016/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1021/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1022/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1024/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1025/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1027/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1033/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1035/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1037/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1040/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1041/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1042/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1043/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1044/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1045/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1049/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1050/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1051/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1052/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1053/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1054/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1055/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1056/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1057/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1058/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1059/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1060/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1061/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1062/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1063/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1064/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1065/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1066/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1041/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1042/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1043/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1044/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1045/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1049/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1050/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1051/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1052/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1053/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1054/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1055/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1056/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1057/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1058/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1059/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1060/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1061/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1062/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1063/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1064/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1065/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1066/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1058/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1059/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1060/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1061/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1062/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1063/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1064/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1065/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1066/300/450');"></div>
+            <div class="poster-item" style="background-image: url('https://picsum.photos/id/1024/300/450');"></div>
+        </div>
+        <!-- Overlay noir réduit à 25% -->
+        <div class="absolute inset-0 bg-black/25 z-10"></div>
+    </div>
+    <nav class="relative z-20 w-full px-6 py-5 md:px-12 flex items-center justify-between">
+        <div class="flex items-center gap-8">
+            <a class="text-3xl font-black text-primary tracking-tighter uppercase font-display" href="#">
+                Neo4flix
+            </a>
+            <div class="hidden md:flex gap-6 text-sm font-medium text-gray-800 dark:text-gray-300">
+                <!-- <a class="hover:text-primary transition-colors" href="#">Accueil</a>
+                <a class="hover:text-primary transition-colors" href="#">Séries</a>
+                <a class="hover:text-primary transition-colors" href="#">Films</a>
+                <a class="hover:text-primary transition-colors" href="#">Nouveautés</a> -->
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            
+            <a class="bg-primary hover:bg-red-700 text-white px-4 py-1.5 rounded text-sm font-semibold transition-colors duration-200"
+                href="login.html">
+                S'identifier
+            </a>
+        </div>
+    </nav>
+    <main
+        class="relative z-20 flex-grow flex flex-col justify-center items-center text-center px-4 sm:px-8 mt-10 mb-20">
+        <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
+
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white">
+                Films, séries et animes <br class="hidden md:block" />
+                <span class="text-transparent bg-clip-text bg-gradient-to-b from-primary to-white-500">en
+                    illimité.</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-200 font-medium max-w-2xl mx-auto ">
+                Où que vous soyez. Annulable à tout moment.
+            </p>
+            <p class="text-base md:text-lg text-gray-400 max-w-xl mx-auto pb-4">
+                Prêt à regarder Neo4flix ? Saisissez votre adresse e-mail pour vous abonner ou réactiver votre
+                abonnement.
+            </p>
+            <div class="w-full max-w-3xl mx-auto animate-slide-up">
+                <div class="flex flex-col md:flex-row gap-3 items-stretch justify-center">
+
+                    <button
+                        class="h-14 md:h-16 px-8 bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-white text-xl font-bold rounded-lg flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg shadow-primary/30 whitespace-nowrap duration-200"
+                        type="submit">
+                        Commencer
+                        <span class="material-icons text-2xl">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+
+</body>
+
+</html>
