@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empire Streami - Interstellar</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        netflixRed: '#E50914',
+                        darkRed: '#B20710',
+                        pureBlack: '#000000',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #000; color: #fff; scroll-behavior: smooth; }
+        
+        #main-header { transition: background-color 0.4s ease; }
+
+        /* --- HERO & VIDEO SYSTEM --- */
+        .hero-container { position: relative; min-height: 85vh; width: 100%; overflow: hidden; display: flex; align-items: center; }
+        
+        #hero-poster { 
+            position: absolute; inset: 0; z-index: 10; 
+            transition: opacity 1.5s ease-in-out; 
+        }
+
+        #video-background { 
+            position: absolute; inset: 0; z-index: 5; 
+            width: 100%; height: 100%; pointer-events: none;
+            transform: scale(1.15); /* Pour cacher les bords YouTube */
+        }
+
+        /* Dégradés Vignette Hero (Toujours au-dessus de la vidéo) */
+        .vignette-layer { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+        .vignette-left { background: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0) 100%); }
+        .vignette-bottom { background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 20%, transparent 50%); }
+
+        /* Bouton Unmute */
+        #unmute-btn {
+            position: absolute; bottom: 120px; right: 60px; z-index: 50;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3);
+            display: none; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        #unmute-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); border-color: #fff; }
+
+        /* --- UI COMPONENTS --- */
+        .btn-circle {
+            width: 48px; height: 48px; border-radius: 9999px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.2s ease; cursor: pointer;
+        }
+        .btn-circle:hover { border-color: #fff; background: rgba(255, 255, 255, 0.2); transform: scale(1.1); }
+        .btn-primary-red { background-color: #E50914; transition: background 0.3s ease; }
+        .btn-primary-red:hover { background-color: #B20710; }
+
+        .btn-review-glow {
+            background: linear-gradient(45deg, #E50914, #ff3d47);
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.4);
+            animation: pulse-red 3s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(229, 9, 20, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); }
+        }
+
+        /* Bento Grid Photos */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 200px);
+            gap: 12px;
+        }
+        .bento-item { border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; }
+        .bento-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .bento-item:hover img { transform: scale(1.05); }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* --- PRIME CARDS --- */
+        .prime-card {
+            width: 267px; height: 401px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0; border-radius: 8px; overflow: hidden;
+        }
+        .prime-card:hover { width: 475px; }
+        .img-portrait { opacity: 1; transition: opacity 0.4s ease; }
+        .img-landscape { opacity: 0; transition: opacity 0.4s ease; position: absolute; inset: 0; }
+        .prime-card:hover .img-portrait { opacity: 0; }
+        .prime-card:hover .img-landscape { opacity: 1; }
+        .card-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+            opacity: 0; transition: opacity 0.3s ease 0.1s;
+        }
+        .prime-card:hover .card-overlay { opacity: 1; }
+
+        #review-modal { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
+            z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased overflow-x-hidden">
+
+    <!-- Header -->
+    <header id="main-header" class="fixed top-0 w-full z-[100] px-6 md:px-16 py-5 flex items-center justify-between bg-transparent">
+        <div class="flex items-center space-x-10">
+            <h1 class="text-netflixRed text-2xl md:text-4xl font-extrabold tracking-tighter uppercase cursor-pointer">Empire Streami</h1>
+            <nav class="hidden lg:flex space-x-8 text-base font-medium text-gray-300">
+                <a href="#" class="text-white hover:text-white transition">Accueil</a>
+                <a href="#" class="hover:text-white transition">Séries</a>
+                <a href="#" class="hover:text-white transition">Films</a>
+                <a href="#" class="hover:text-white transition">Nouveautés</a>
+                <a href="#" class="hover:text-white transition">Ma liste</a>
+            </nav>
+        </div>
+        <div class="flex items-center space-x-6 text-xl">
+            <button class="hover:text-gray-400 transition"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <div class="w-10 h-10 rounded bg-darkRed overflow-hidden border-2 border-transparent hover:border-white transition cursor-pointer shadow-lg">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero / Palette avec Auto-play -->
+    <section class="hero-container">
+        
+        <!-- Image Fixe (Poster) -->
+        <div id="hero-poster">
+            <img src="https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover" alt="Hero Poster">
+        </div>
+
+        <!-- Vidéo Background (Chargé via API YouTube) -->
+        <div id="video-background-container" class="absolute inset-0 z-0">
+            <div id="player"></div>
+        </div>
+
+        <!-- Couches de dégradé (Toujours au-dessus de tout) -->
+        <div class="vignette-layer vignette-left"></div>
+        <div class="vignette-layer vignette-bottom"></div>
+
+        <!-- Contrôle Audio -->
+        <button id="unmute-btn" onclick="toggleMute()">
+            <i id="mute-icon" class="fa-solid fa-volume-xmark text-white text-sm"></i>
+        </button>
+
+        <!-- Content -->
+        <div class="relative z-30 w-full px-6 md:px-16 lg:px-24">
+            <div class="max-w-3xl">
+                <h2 class="text-5xl md:text-8xl font-black uppercase tracking-tighter mb-4">Interstellar</h2>
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="bg-netflixRed text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">Empire Exclusive</span>
+                    <span class="text-white font-bold"><i class="fa-solid fa-star text-yellow-500 mr-1"></i> 9.2</span>
+                </div>
+                <p class="text-gray-300 text-lg md:text-xl leading-relaxed mb-8 max-w-2xl">
+                    Le voyage d'un groupe d'explorateurs qui utilisent une faille dans l'espace-temps pour repousser les limites humaines.
+                </p>
+                <div class="flex items-center gap-4">
+                    <button class="btn-primary-red h-[52px] px-10 rounded-full font-bold flex items-center gap-3 active:scale-95 transition">
+                        <i class="fa-solid fa-play"></i> <span>Lecture</span>
+                    </button>
+                    <button class="btn-circle"><i class="fa-solid fa-plus"></i></button>
+                    <button class="btn-circle" onclick="openReviewModal()"><i class="fa-solid fa-pen-to-square"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="relative z-40 px-6 md:px-16 lg:px-24 py-16 bg-black">
+        <div class="flex flex-col lg:flex-row gap-16">
+            <div class="flex-1 space-y-20">
+                
+                <!-- Bento Gallery -->
+                <section>
+                    <div class="flex justify-between items-end mb-8">
+                        <h3 class="text-3xl font-bold">Galerie Photos</h3>
+                        <a href="#" class="text-netflixRed font-bold hover:underline">Voir tout</a>
+                    </div>
+                    <div class="bento-grid">
+                        <div class="bento-item col-span-2 row-span-2"><img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=800" alt="S1"></div>
+                        <div class="bento-item col-span-2"><img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800" alt="S2"></div>
+                        <div class="bento-item col-span-1"><img src="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=800" alt="S3"></div>
+                        <div class="bento-item col-span-1"><img src="https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800" alt="S4"></div>
+                    </div>
+                </section>
+
+                <!-- Casting -->
+                <section>
+                    <h3 class="text-3xl font-bold mb-8">Casting Principal</h3>
+                    <div class="flex space-x-12 overflow-x-auto no-scrollbar pb-4">
+                        <div class="flex-shrink-0 w-48 text-center group cursor-pointer">
+                            <div class="w-44 h-44 mx-auto rounded-full overflow-hidden border-2 border-transparent group-hover:border-netflixRed transition p-1.5"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Cooper" class="w-full h-full object-cover rounded-full bg-gray-800" alt="C"></div>
+                            <p class="mt-6 font-bold text-lg">M. McConaughey</p>
+                        </div>
+                        <div class="flex-shrink-0 w-48 text-center group cursor-pointer">
+                            <div class="w-44 h-44 mx-auto rounded-full overflow-hidden border-2 border-transparent group-hover:border-netflixRed transition p-1.5"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Amelia" class="w-full h-full object-cover rounded-full bg-gray-800" alt="A"></div>
+                            <p class="mt-6 font-bold text-lg">Anne Hathaway</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reviews -->
+                <section id="reviews">
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-3xl font-bold">Avis de la communauté</h3>
+                        <button onclick="openReviewModal()" class="btn-review-glow px-8 py-3 rounded-full font-bold transition shadow-lg">Laisser un avis</button>
+                    </div>
+                    <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                        <div class="flex justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-darkRed flex items-center justify-center font-bold">JD</div>
+                                <p class="font-bold">Jean Dupont</p>
+                            </div>
+                            <div class="text-netflixRed font-black text-xl">10/10</div>
+                        </div>
+                        <p class="text-gray-300">Un chef-d'œuvre absolu. La musique de Hans Zimmer et la réalisation de Nolan créent une expérience inoubliable.</p>
+                    </div>
+                </section>
+
+                <!-- Recommandations (Home Style) -->
+                <section>
+                    <h3 class="text-3xl font-bold mb-8">Vous aimerez aussi</h3>
+                    <div class="flex space-x-4 overflow-x-auto no-scrollbar py-12">
+                        <div class="prime-card relative bg-gray-900 group/item cursor-pointer">
+                            <img src="https://picsum.photos/id/101/300/450" class="img-portrait w-full h-full object-cover">
+                            <img src="https://picsum.photos/id/101/800/450" class="img-landscape w-full h-full object-cover">
+                            <div class="card-overlay absolute inset-0 z-20 flex flex-col justify-end p-6">
+                                <h4 class="font-bold text-xl uppercase">Inception</h4>
+                                <div class="flex items-center space-x-4 mt-3">
+                                    <button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play text-sm"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="lg:w-80 space-y-10">
+                <div class="bg-netflixRed/10 border border-netflixRed/20 p-8 rounded-3xl text-center">
+                    <p class="text-sm font-bold uppercase text-netflixRed mb-2">Empire Score</p>
+                    <div class="text-6xl font-black mb-2">9.2</div>
+                    <p class="text-xs text-gray-500">Basé sur 12,450 votes</p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Modal Review -->
+    <div id="review-modal">
+        <div class="bg-[#111] border border-white/10 p-8 rounded-3xl w-full max-w-lg mx-6 relative shadow-2xl">
+            <button onclick="closeReviewModal()" class="absolute top-6 right-6 text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h3 class="text-2xl font-bold mb-6">Votre avis compte</h3>
+            <input type="range" min="0" max="10" step="1" class="w-full accent-netflixRed cursor-pointer mb-6">
+            <textarea rows="4" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 mb-6 focus:outline-none focus:border-netflixRed" placeholder="Qu'avez-vous pensé ?"></textarea>
+            <button class="w-full btn-primary-red py-4 rounded-xl font-bold text-lg active:scale-95 transition">Publier</button>
+        </div>
+    </div>
+
+    <!-- YouTube API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        // --- CONFIGURATION AUTO-PLAY ---
+        let player;
+        const videoId = 'RJQsP1hbHVU'; // ID TMDB/YouTube (Ex: Interstellar Trailer)
+        const poster = document.getElementById('hero-poster');
+        const unmuteBtn = document.getElementById('unmute-btn');
+        const muteIcon = document.getElementById('mute-icon');
+
+        // Initialisation de l'API YouTube
+        function onYouTubeIframeAPIReady() {
+            // Désactiver sur Mobile (Largeur < 768px)
+            if (window.innerWidth < 768) return;
+
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0,
+                    'mute': 1,
+                    'loop': 0,
+                    'modestbranding': 1,
+                    'rel': 0,
+                    'showinfo': 0,
+                    'iv_load_policy': 3,
+                    'playsinline': 1,
+                    'fs': 0,
+                    'disablekb': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // Attendre 5 secondes avant de faire la transition
+            setTimeout(() => {
+                if (player && typeof player.playVideo === "function") {
+                    player.playVideo();
+                    poster.style.opacity = '0'; // Fondu vers la vidéo
+                    unmuteBtn.style.display = 'flex'; // Afficher le bouton unmute
+                }
+            }, 5000);
+        }
+
+        function onPlayerStateChange(event) {
+            // Si la vidéo est finie (Ended = 0 chez YouTube API state 0)
+            if (event.data === YT.PlayerState.ENDED) {
+                poster.style.opacity = '1'; // Retour au poster
+                unmuteBtn.style.display = 'none'; // Cacher le contrôle audio
+            }
+        }
+
+        function toggleMute() {
+            if (player.isMuted()) {
+                player.unMute();
+                muteIcon.classList.remove('fa-volume-xmark');
+                muteIcon.classList.add('fa-volume-high');
+            } else {
+                player.mute();
+                muteIcon.classList.remove('fa-volume-high');
+                muteIcon.classList.add('fa-volume-xmark');
+            }
+        }
+
+        // --- UI LOGIC ---
+        const header = document.getElementById('main-header');
+        window.addEventListener('scroll', () => {
+            header.style.backgroundColor = window.scrollY > 100 ? 'rgba(0,0,0,0.95)' : 'transparent';
+        });
+
+        function openReviewModal() {
+            document.getElementById('review-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeReviewModal() {
+            document.getElementById('review-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+</body>
+</html>

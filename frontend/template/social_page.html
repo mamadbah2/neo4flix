@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empire Streami - Social</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        netflixRed: '#E50914',
+                        darkRed: '#B20710',
+                        pureBlack: '#000000',
+                        surface: '#141414',
+                        surfaceLighter: '#222222',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #000; color: #fff; scroll-behavior: smooth; }
+        
+        /* Navigation Hide/Show */
+        #main-header { transition: transform 0.4s ease, background-color 0.4s ease; }
+        .header-hidden { transform: translateY(-100%); }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Glassmorphism effect */
+        .glass-card {
+            background: rgba(20, 20, 20, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .red-gradient-border {
+            background: linear-gradient(to tr, #E50914, #B20710);
+            padding: 2px;
+            border-radius: 9999px;
+        }
+
+        /* Hover effects */
+        .action-hover:hover {
+            transform: translateY(-2px);
+            background: rgba(229, 9, 20, 0.1);
+            border-color: rgba(229, 9, 20, 0.3);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-white bg-pureBlack min-h-screen">
+
+    <!-- Header Dynamique -->
+    <header id="main-header" class="fixed top-0 w-full z-[100] px-6 md:px-12 py-4 flex items-center justify-between bg-transparent">
+        <div class="flex items-center space-x-10">
+            <h1 class="text-netflixRed text-2xl md:text-3xl font-extrabold tracking-tighter uppercase cursor-pointer">Empire Streami</h1>
+            <nav class="hidden lg:flex space-x-6 text-sm font-medium text-gray-400">
+                <a href="index.html" class="hover:text-white transition">Accueil</a>
+                <a href="#" class="hover:text-white transition">Séries</a>
+                <a href="#" class="hover:text-white transition">Films</a>
+                <a href="#" class="text-white border-b-2 border-netflixRed pb-1 transition">Social</a>
+            </nav>
+        </div>
+        <div class="flex items-center space-x-6">
+            <button class="hover:text-netflixRed transition"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button class="hover:text-netflixRed transition relative">
+                <i class="fa-solid fa-bell"></i>
+                <span class="absolute -top-1 -right-1 bg-netflixRed text-[10px] w-4 h-4 rounded-full flex items-center justify-center">2</span>
+            </button>
+            <div class="w-9 h-9 rounded bg-darkRed overflow-hidden border-2 border-transparent hover:border-white transition cursor-pointer">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Stefan" alt="Profile">
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-24 pb-12 px-4 md:px-12 container mx-auto">
+        <!-- Title Section -->
+        <div class="mb-10">
+            <h2 class="text-3xl md:text-4xl font-black text-white flex items-center gap-4">
+                <span class="p-2 bg-netflixRed/10 rounded-lg text-netflixRed"><i class="fa-solid fa-users-viewfinder"></i></span>
+                Le Graphe Humain
+            </h2>
+            <p class="text-gray-400 mt-2 text-lg">Connectez-vous avec vos amis et découvrez leurs coups de cœur.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT SIDEBAR: PROFILE & FRIENDS -->
+            <aside class="lg:col-span-3 space-y-8">
+                <!-- User Profile Card -->
+                <div class="glass-card rounded-3xl p-8 flex flex-col items-center text-center relative overflow-hidden group">
+                    <!-- Subtle red glow in background -->
+                    <div class="absolute -top-10 -left-10 w-32 h-32 bg-netflixRed/10 blur-3xl"></div>
+                    
+                    <div class="relative z-10 mb-6">
+                        <div class="red-gradient-border shadow-xl shadow-netflixRed/10">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Stefan" alt="Profile" 
+                                class="w-24 h-24 object-cover rounded-full border-4 border-surface">
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold">Stefan</h3>
+                    <p class="text-netflixRed font-semibold text-sm mb-6 tracking-wide">@cinephile_stefan</p>
+                    
+                    <div class="grid grid-cols-3 gap-3 w-full mb-8">
+                        <div class="bg-white/5 rounded-2xl py-4 transition hover:bg-white/10">
+                            <div class="text-xl font-black">245</div>
+                            <div class="text-[10px] uppercase text-gray-500 font-bold">Vus</div>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl py-4 transition hover:bg-white/10">
+                            <div class="text-xl font-black">1.2k</div>
+                            <div class="text-[10px] uppercase text-gray-500 font-bold">Abonnés</div>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl py-4 transition hover:bg-white/10">
+                            <div class="text-xl font-black">89</div>
+                            <div class="text-[10px] uppercase text-gray-500 font-bold">Listes</div>
+                        </div>
+                    </div>
+
+                    <button class="w-full py-3 bg-netflixRed text-white rounded-xl font-bold text-sm transition hover:bg-darkRed flex items-center justify-center gap-2 shadow-lg shadow-netflixRed/20">
+                        <i class="fa-solid fa-pen-to-square"></i> Modifier le profil
+                    </button>
+                </div>
+
+                <!-- Friends List -->
+                <div class="glass-card rounded-3xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-user-group text-netflixRed text-sm"></i> Amis
+                        </h4>
+                        <button class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-circle-plus"></i></button>
+                    </div>
+                    
+                    <div class="space-y-5">
+                        <!-- Friend Item -->
+                        <div class="flex items-center justify-between group cursor-pointer p-2 rounded-xl transition hover:bg-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" class="w-11 h-11 rounded-full bg-surfaceLighter border border-white/10" alt="Alex">
+                                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-surface rounded-full"></span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold group-hover:text-netflixRed transition">Alex M.</p>
+                                    <p class="text-[11px] text-gray-500">En ligne</p>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-comment-dots text-gray-600 group-hover:text-white transition"></i>
+                        </div>
+                        <!-- Friend 2 -->
+                        <div class="flex items-center justify-between group cursor-pointer p-2 rounded-xl transition hover:bg-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" class="w-11 h-11 rounded-full bg-surfaceLighter border border-white/10" alt="Sarah">
+                                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-surface rounded-full"></span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold group-hover:text-netflixRed transition">Sarah J.</p>
+                                    <p class="text-[11px] text-gray-500">Regarde "Coco"</p>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-comment-dots text-gray-600"></i>
+                        </div>
+                        <!-- Friend 3 -->
+                        <div class="flex items-center justify-between group cursor-pointer p-2 rounded-xl transition hover:bg-white/5">
+                            <div class="flex items-center gap-3">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" class="w-11 h-11 rounded-full bg-surfaceLighter border border-white/10" alt="Mike">
+                                <div>
+                                    <p class="text-sm font-bold">Mike R.</p>
+                                    <p class="text-[11px] text-gray-500">Il y a 2h</p>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-comment-dots text-gray-600"></i>
+                        </div>
+                    </div>
+                    <button class="w-full mt-6 text-xs text-gray-500 hover:text-netflixRed transition font-bold uppercase tracking-widest">Voir tous les amis</button>
+                </div>
+            </aside>
+
+            <!-- CENTER: FEED & RECOMMENDATIONS -->
+            <section class="lg:col-span-6 space-y-8">
+                <!-- Highlight Recommendation -->
+                <div class="glass-card rounded-3xl overflow-hidden min-h-[500px] flex flex-col p-6 shadow-2xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold">Partagés avec moi</h3>
+                            <p class="text-gray-400 text-sm">Ce que vos amis vous recommandent</p>
+                        </div>
+                        <div class="flex bg-white/5 p-1 rounded-full border border-white/5">
+                            <button class="px-5 py-1.5 bg-netflixRed text-white rounded-full text-xs font-bold">Tous</button>
+                            <button class="px-5 py-1.5 text-gray-400 hover:text-white rounded-full text-xs font-bold transition">Films</button>
+                        </div>
+                    </div>
+
+                    <!-- Large Featured Card -->
+                    <div class="relative aspect-[16/9] rounded-2xl overflow-hidden group cursor-pointer mb-8">
+                        <img src="https://picsum.photos/id/237/1200/600" class="w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-70" alt="Luca">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                        
+                        <!-- Sender Badge -->
+                        <div class="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" class="w-6 h-6 rounded-full" alt="Sarah">
+                            <span class="text-xs font-medium text-white">Recommandé par <span class="text-netflixRed font-bold">Sarah</span></span>
+                        </div>
+
+                        <!-- Content Overlay -->
+                        <div class="absolute bottom-0 left-0 p-8 w-full">
+                            <h4 class="text-4xl font-black mb-3">LUCA</h4>
+                            <p class="text-gray-300 text-sm italic mb-6 line-clamp-2 max-w-xl leading-relaxed">
+                                "Tu dois absolument regarder ça ! Ça m'a rappelé notre voyage en Italie. L'animation est juste incroyable."
+                            </p>
+                            <div class="flex items-center gap-4">
+                                <button class="bg-white text-black px-8 py-3 rounded-full font-bold text-sm flex items-center gap-2 hover:bg-gray-200 transition">
+                                    <i class="fa-solid fa-play"></i> Regarder
+                                </button>
+                                <button class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-full font-bold text-sm hover:bg-white/20 transition">
+                                    Ajouter
+                                </button>
+                                <button class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-netflixRed transition ml-auto">
+                                    <i class="fa-solid fa-reply"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secondary Grid -->
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Récents</h4>
+                        <div class="grid grid-cols-3 gap-4">
+                            <!-- Movie Item -->
+                            <div class="group cursor-pointer">
+                                <div class="relative aspect-video rounded-xl overflow-hidden mb-2">
+                                    <img src="https://picsum.photos/id/240/400/250" class="w-full h-full object-cover group-hover:scale-105 transition" alt="Tangled">
+                                    <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition"></div>
+                                    <div class="absolute top-2 left-2 ring-2 ring-surface rounded-full overflow-hidden w-7 h-7">
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="Alex">
+                                    </div>
+                                </div>
+                                <p class="text-xs font-bold truncate">RAIPONCE</p>
+                                <p class="text-[10px] text-gray-500 mt-1">Envoyé il y a 2h</p>
+                            </div>
+                            <!-- Movie Item 2 -->
+                            <div class="group cursor-pointer">
+                                <div class="relative aspect-video rounded-xl overflow-hidden mb-2">
+                                    <img src="https://picsum.photos/id/250/400/250" class="w-full h-full object-cover group-hover:scale-105 transition" alt="Coco">
+                                    <div class="absolute top-2 left-2 ring-2 ring-surface rounded-full overflow-hidden w-7 h-7">
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" alt="Sarah">
+                                    </div>
+                                </div>
+                                <p class="text-xs font-bold truncate">COCO</p>
+                                <p class="text-[10px] text-gray-500 mt-1">Hier</p>
+                            </div>
+                            <!-- Movie Item 3 -->
+                            <div class="group cursor-pointer">
+                                <div class="relative aspect-video rounded-xl overflow-hidden mb-2">
+                                    <img src="https://picsum.photos/id/260/400/250" class="w-full h-full object-cover group-hover:scale-105 transition" alt="Dino">
+                                    <div class="absolute top-2 left-2 ring-2 ring-surface rounded-full overflow-hidden w-7 h-7">
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" alt="Mike">
+                                    </div>
+                                </div>
+                                <p class="text-xs font-bold truncate">LE VOYAGE D'ARLO</p>
+                                <p class="text-[10px] text-gray-500 mt-1">Il y a 2 jours</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT SIDEBAR: ACTIVITY FEED -->
+            <aside class="lg:col-span-3">
+                <div class="glass-card rounded-3xl p-6 h-full shadow-lg">
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-bolt-lightning text-netflixRed"></i> Flux d'Activité
+                        </h3>
+                        <a href="#" class="text-[10px] font-bold text-gray-500 hover:text-white uppercase tracking-tighter">Tout voir</a>
+                    </div>
+
+                    <!-- Vertical Timeline -->
+                    <div class="space-y-8 relative before:absolute before:inset-y-0 before:left-[15px] before:w-0.5 before:bg-white/5">
+                        
+                        <!-- Activity 1 -->
+                        <div class="relative z-10 flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-surface border-2 border-netflixRed overflow-hidden flex-shrink-0 shadow-lg shadow-netflixRed/10">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Emma" alt="Emma">
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-300 leading-snug">
+                                    <span class="font-bold text-white">Emma</span> a noté <span class="italic text-white">Monstres & Cie</span>
+                                </p>
+                                <div class="flex text-netflixRed text-[10px] my-1 gap-0.5">
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                </div>
+                                <p class="text-[10px] text-gray-500">Il y a 10 mins</p>
+                            </div>
+                        </div>
+
+                        <!-- Activity 2 -->
+                        <div class="relative z-10 flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-surface border-2 border-blue-500 overflow-hidden flex-shrink-0">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="John">
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-300 leading-snug">
+                                    <span class="font-bold text-white">John</span> a ajouté 3 films à <span class="text-blue-500 font-bold underline decoration-blue-500/30 underline-offset-4">Sci-Fi Favs</span>
+                                </p>
+                                <div class="flex -space-x-2 mt-3">
+                                    <img src="https://picsum.photos/id/11/100/150" class="w-7 h-10 rounded-md border border-black shadow-lg" alt="poster">
+                                    <img src="https://picsum.photos/id/12/100/150" class="w-7 h-10 rounded-md border border-black shadow-lg" alt="poster">
+                                    <div class="w-7 h-10 rounded-md bg-surfaceLighter border border-white/10 flex items-center justify-center text-[10px] text-gray-400">+1</div>
+                                </div>
+                                <p class="text-[10px] text-gray-500 mt-2">Il y a 1h</p>
+                            </div>
+                        </div>
+
+                        <!-- Activity 3 -->
+                        <div class="relative z-10 flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-surface border-2 border-purple-500 overflow-hidden flex-shrink-0">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa" alt="Lisa">
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-300 leading-snug">
+                                    <span class="font-bold text-white">Lisa</span> suit désormais le réalisateur <span class="text-white font-bold underline decoration-purple-500/30 underline-offset-4">C. Nolan</span>
+                                </p>
+                                <p class="text-[10px] text-gray-500 mt-2">Il y a 3h</p>
+                            </div>
+                        </div>
+
+                        <!-- Community Card -->
+                        <div class="mt-8 p-5 bg-gradient-to-br from-netflixRed/20 to-transparent rounded-2xl border border-netflixRed/20 shadow-xl">
+                            <h5 class="text-white font-black text-sm mb-1 uppercase tracking-tighter italic">Challenge du mois</h5>
+                            <p class="text-[11px] text-gray-400 mb-4">Regardez 5 films d'horreur en janvier</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex -space-x-2">
+                                    <span class="w-6 h-6 rounded-full ring-2 ring-pureBlack bg-gray-700 text-[8px] flex items-center justify-center font-bold">JD</span>
+                                    <span class="w-6 h-6 rounded-full ring-2 ring-pureBlack bg-gray-600 text-[8px] flex items-center justify-center font-bold">AM</span>
+                                    <span class="w-6 h-6 rounded-full ring-2 ring-pureBlack bg-gray-800 text-[8px] flex items-center justify-center font-bold">+12</span>
+                                </div>
+                                <button class="text-xs text-netflixRed font-black hover:text-white transition uppercase tracking-widest">Rejoindre</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        // --- Header Hide/Show Logic ---
+        let lastScrollTop = 0;
+        const header = document.getElementById('main-header');
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Background color change
+            if (scrollTop > 50) {
+                header.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+            } else {
+                header.style.backgroundColor = 'transparent';
+            }
+
+            // Hide/Show on scroll
+            if (scrollTop > lastScrollTop && scrollTop > 200) {
+                header.classList.add('header-hidden');
+            } else {
+                header.classList.remove('header-hidden');
+            }
+            lastScrollTop = scrollTop;
+        });
+    </script>
+</body>
+</html>

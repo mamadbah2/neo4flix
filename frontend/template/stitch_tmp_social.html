@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Neo4flix - Le Graphe Humain</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#10b981", // Emerald green like the dashboard reference
+                        "background-light": "#F3F4F6",
+                        "background-dark": "#0f1014",
+                        "surface-dark": "#18191c",
+                        "surface-darker": "#121316",
+                        "surface-light": "#ffffff",
+                        "accent-purple": "#8b5cf6",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .glass-panel {
+            background: rgba(24, 25, 28, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-sans transition-colors duration-300 min-h-screen flex flex-col">
+    <nav
+        class="w-full z-50 px-6 py-4 flex items-center justify-between bg-surface-darker/90 backdrop-blur-md border-b border-white/5 sticky top-0">
+        <div class="flex items-center gap-12">
+            <a class="text-3xl font-bold tracking-tighter text-white italic" href="#">
+                Neo4flix
+            </a>
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
+                <a class="hover:text-white transition-colors" href="#">Home</a>
+                <a class="hover:text-white transition-colors" href="#">Movies</a>
+                <a class="hover:text-white transition-colors" href="#">Series</a>
+                <a class="text-primary transition-colors font-semibold" href="#">Social</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-6 text-white">
+            <button class="hover:text-gray-300"><span class="material-symbols-outlined">search</span></button>
+            <button class="hover:text-gray-300"><span class="material-symbols-outlined">notifications</span></button>
+            <div
+                class="h-9 w-9 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 overflow-hidden border-2 border-white/10 ring-2 ring-primary/20">
+                <img alt="User Profile" class="h-full w-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL848mt_2tPKZLKqeJJBM-Lwvyk4vnOib8Ft9fP-Bbq_8N2s-I7D7nMV2GVQOb4IR1PnOkTU-L5guKicaRZYzPNd3W8YZsJwPYE84lnh6xa9gSUoLLxLji8Xl9qEJy-T0QSrZHFpvfw_aH2dvJZKBc075XlIruLJfGUjqi4BGpCtZ7GV7HtBs0rWWz5e6nRhDYDWaINot5eli5l3A5lq64SRA5TnbT9RFS5bHc83_npLHdfAnoe1gzA7Xk7gqvKKXihsB4OxjWZUPX" />
+            </div>
+        </div>
+    </nav>
+    <main class="flex-grow container mx-auto px-4 py-8 md:px-6">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">Le Graphe Humain</h1>
+            <p class="text-gray-400 text-sm">Connect with your movie network and discover shared favorites.</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+            <div class="lg:col-span-3 space-y-6">
+                <div
+                    class="glass-panel rounded-3xl p-6 flex flex-col items-center text-center relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-primary/20 to-transparent">
+                    </div>
+                    <div class="relative z-10 mt-4 mb-4">
+                        <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-primary to-accent-purple">
+                            <img alt="Profile"
+                                class="w-full h-full object-cover rounded-full border-4 border-surface-dark"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL848mt_2tPKZLKqeJJBM-Lwvyk4vnOib8Ft9fP-Bbq_8N2s-I7D7nMV2GVQOb4IR1PnOkTU-L5guKicaRZYzPNd3W8YZsJwPYE84lnh6xa9gSUoLLxLji8Xl9qEJy-T0QSrZHFpvfw_aH2dvJZKBc075XlIruLJfGUjqi4BGpCtZ7GV7HtBs0rWWz5e6nRhDYDWaINot5eli5l3A5lq64SRA5TnbT9RFS5bHc83_npLHdfAnoe1gzA7Xk7gqvKKXihsB4OxjWZUPX" />
+                        </div>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">Stefan</h2>
+                    <p class="text-emerald-400 text-sm font-medium mb-6">@cinephile_stefan</p>
+                    <div class="grid grid-cols-3 gap-2 w-full mb-6">
+                        <div class="bg-white/5 rounded-xl p-2 py-3">
+                            <div class="text-lg font-bold text-white">245</div>
+                            <div class="text-[10px] uppercase tracking-wider text-gray-500">Watched</div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-2 py-3">
+                            <div class="text-lg font-bold text-white">12k</div>
+                            <div class="text-[10px] uppercase tracking-wider text-gray-500">Followers</div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-2 py-3">
+                            <div class="text-lg font-bold text-white">89</div>
+                            <div class="text-[10px] uppercase tracking-wider text-gray-500">Lists</div>
+                        </div>
+                    </div>
+                    <button
+                        class="w-full py-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-lg">edit</span>
+                        Edit Profile
+                    </button>
+                </div>
+                <div class="glass-panel rounded-3xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-white font-semibold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">group</span>
+                            Friends
+                        </h3>
+                        <button class="text-gray-400 hover:text-white"><span
+                                class="material-symbols-outlined">add_circle</span></button>
+                    </div>
+                    <div class="relative mb-6">
+                        <span
+                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 material-symbols-outlined text-lg">search</span>
+                        <input
+                            class="w-full bg-surface-darker border border-white/5 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-600"
+                            placeholder="Find friends..." type="text" />
+                    </div>
+                    <div class="space-y-4">
+                        <div
+                            class="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-lg -mx-2 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+                                    <img alt="Alex" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgr-GUZE0LGbqkdvO3t8WSXCLfFiHnMCakvxPdC0Vbaf7icqchD5VR2s3m6Uw09iWRV-Lp6sxhadLm2vj8fMy_zDzmLOQyFZOgSgXUuOBa-YARXqnBTakb9rOP3gxSt9B3-xy9i-H5hWomSX3qk-Y2Qhdx3afifxBU1oJikNfZnG_z1yNaIubHsl1f1Yu5WfMsiFLT11yYkcAe6XRn7wyxHV1o_V2744Ou3fLtrZv7juYMFWHalYOoPD2MxtJBPimWh6_3YTW9gRSN" />
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-white">Alex M.</p>
+                                    <p class="text-xs text-gray-500">Online</p>
+                                </div>
+                            </div>
+                            <button
+                                class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-dark border border-white/10 text-gray-400 group-hover:text-white group-hover:border-primary/50 transition-all">
+                                <span class="material-symbols-outlined text-sm">chat</span>
+                            </button>
+                        </div>
+                        <div
+                            class="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-lg -mx-2 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+                                    <img alt="Sarah" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuByDHO96v39sLDpwbV9gMfIU-QlAUj5CrPtVkSL5l4ezsCO3XX1JjeMZ0myIyBKVQfIVXlK3SvufL3HABjx6eRIBQBw67_aKoKSWNHQkDMA6_WF2QPNm-pnWuI56wQNpNVu_CJQwP2tIzXeeE0yWQD_AD3dTyMEAp5IU6gWpVZy-CBaz_eQ9COz-7B4_Z8u6eAg5xbd11YeGE8IfxqjYTpisAtQLkagimKJSW1r9KnBqZxb5598eF7q-nN5RgN0tX34C_bRFgRp4n21" />
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-white">Sarah J.</p>
+                                    <p class="text-xs text-gray-500">Watching "Coco"</p>
+                                </div>
+                            </div>
+                            <button
+                                class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-dark border border-white/10 text-gray-400 group-hover:text-white group-hover:border-primary/50 transition-all">
+                                <span class="material-symbols-outlined text-sm">chat</span>
+                            </button>
+                        </div>
+                        <div
+                            class="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-lg -mx-2 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden">
+                                    <img alt="Mike" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFDn_7bIfN7qOaTzSwUr1_EaPGrXc4-vkMEYk9902NXBN15yCU6dWwncRdTDDtZWwSO0gtrGR-otrTlsvLX8VK5p8XALH26-6Yw8RWit0-a56TWq76FoYXhqNqvwUvH-SQITkqwWG6wr4NKiJJeI1dStAL3fjLY8GJYrCTnvoi9ipeMm33nFEotTypFVFD4r5837uPC-23sJvEvsI7WjTZkQbb2S1nd0Hk4rqm2WUwiB1hyM13Bue9omdIfC6Ti5OOfWxd3j9dCwkh" />
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-white">Mike R.</p>
+                                    <p class="text-xs text-gray-500">Last seen 2h ago</p>
+                                </div>
+                            </div>
+                            <button
+                                class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-dark border border-white/10 text-gray-400 group-hover:text-white group-hover:border-primary/50 transition-all">
+                                <span class="material-symbols-outlined text-sm">chat</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button
+                        class="w-full mt-4 text-xs text-gray-400 hover:text-primary py-2 text-center transition-colors">View
+                        all 148 friends</button>
+                </div>
+            </div>
+            <div class="lg:col-span-6 space-y-6">
+                <div class="glass-panel rounded-3xl p-6 min-h-[600px] flex flex-col">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white mb-1">Partagés avec moi</h2>
+                            <p class="text-sm text-gray-400">Movies your friends think you'll love</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button
+                                class="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-full text-sm transition-colors border border-white/5 active">All</button>
+                            <button
+                                class="px-4 py-2 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white rounded-full text-sm transition-colors border border-transparent">Movies</button>
+                            <button
+                                class="px-4 py-2 bg-transparent hover:bg-white/5 text-gray-400 hover:text-white rounded-full text-sm transition-colors border border-transparent">Shows</button>
+                        </div>
+                    </div>
+                    <div
+                        class="relative aspect-video rounded-2xl overflow-hidden mb-8 group cursor-pointer border border-white/10 shadow-2xl">
+                        <img alt="Luca"
+                            class="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-all duration-500 scale-100 group-hover:scale-105"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnqGvgALc5KKUw4XCG3NzjsrbxXw-ZaG5S0d50j3J-L4cY3dgXxg98XGqXSZB1v27G_ZH0JYOZfS4OD9B9rtxPMrstwPlyYO27rnznjc1-1DVyPF6HybpaB4oqu1_d2TCjr6rCsNIkzZql9OXLx7L37V_dDV-qkmHNZdEcfKr7taldPZRvaNgJu2Ozfy0zvYRXpsFwbXTlf0G8IvzOD6yuRBEbKnEMmmi3WJ144ORrwKWXcQB12s_C9lpFnPrZoqkYY1Ebevjm6lUh" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                        <div
+                            class="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/10">
+                            <img alt="Sender" class="w-5 h-5 rounded-full"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6wALWyKpi1VCmTodAc-JgVf_4Iqv05wOUBATVhcmoOYDxJ4enlYKR45gmur8PHXraajHrOTcMExDsQ-QzoCe2-Ifnes7Zw9TfSp6fnul245bf8qgeN-yTI-qYqeoa1FRgitFjYuiouV0JUrheypwPuGttdpZeLosSLv8zZ5TyvD36jMBBA_0VJVJRSfH5YsNEplAaCPJAl9jhLaVUt3r2hD_Gfhk-abBEH2yC5w9vYR4UdqnUXb4KgcZ511PDfe1bvEBIvxosDld9" />
+                            <span class="text-xs text-white">Recommended by <span
+                                    class="font-bold text-primary">Sarah</span></span>
+                        </div>
+                        <div class="absolute bottom-0 left-0 p-8 w-full">
+                            <h3 class="text-4xl font-bold text-white mb-2">Luca</h3>
+                            <p class="text-gray-300 text-sm mb-4 line-clamp-2 max-w-lg">"You have to watch this! It
+                                reminded me so much of our trip to Italy last summer. The animation style is
+                                incredible."</p>
+                            <div class="flex items-center gap-3">
+                                <button
+                                    class="bg-primary text-black px-6 py-2.5 rounded-full font-bold text-sm flex items-center gap-2 hover:bg-emerald-400 transition-colors">
+                                    <span class="material-symbols-outlined text-lg">play_arrow</span> Watch
+                                </button>
+                                <button
+                                    class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-4 py-2.5 rounded-full font-medium text-sm hover:bg-white/20 transition-colors">
+                                    Add to List
+                                </button>
+                                <button
+                                    class="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors ml-auto"
+                                    title="Reply to Sarah">
+                                    <span class="material-symbols-outlined text-white text-sm">reply</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">Recent
+                            Recommendations</h4>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div
+                                class="bg-surface-darker rounded-xl overflow-hidden border border-white/5 group cursor-pointer hover:border-primary/30 transition-all">
+                                <div class="aspect-[16/10] relative">
+                                    <img alt="Tangled"
+                                        class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgNGylq7qd_E4-Lm8MgF4ijgDhDxyIjh-RAAFSaTWuTNuPRaWwR5MBzI1mNw2OOQQINi2DX3PB-0kzCfkXYmZj_98dkE4kE_V58QyLntZ5XjdTZutydQy-N7N3ignolLttrlpnWWr4CYI6-4Spu4Sz3oHpaFoyX9A4j1IuuwsKZzYRdjd0V_kFT8rvyX_Qx-NIsVI77zlVUTyPT9zIUil3jqm8bX69qn58JqG4tbaxnAQPB43pyzz4Lk71a3zuDgDcS90jGpKRmZMp" />
+                                    <div class="absolute top-2 left-2">
+                                        <div
+                                            class="w-8 h-8 rounded-full border-2 border-surface-darker overflow-hidden">
+                                            <img class="w-full h-full object-cover"
+                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzU63UTDX4MnwlyeYJy55hPjIw2S1ZrTUdlWHzu3OEbTCo209-SKddNOU5VoDjup9XXq3Q992qFKt2s-dCDbqizwKDW0rsiGUcC1h5Ps8Hl0XS6DK_9m1CtSSVuBwTptcAIQjcJuKha29IBJ8i_73XILPxM5jhSk2XGSGoohLi3ROG_nx-h52GoOQC3Xl6U6y_E4ZbzjWCwrNPGnjUdUzeR3qdEcZFfx2W2HmylzyCljhSmq_0vEeVzVZLcCmduU8o-J4hmqBnB58D" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <h5 class="text-white font-medium text-sm truncate">Tangled</h5>
+                                    <p class="text-xs text-gray-500 mt-1">Sent 2h ago</p>
+                                </div>
+                            </div>
+                            <div
+                                class="bg-surface-darker rounded-xl overflow-hidden border border-white/5 group cursor-pointer hover:border-primary/30 transition-all">
+                                <div class="aspect-[16/10] relative">
+                                    <img alt="Coco"
+                                        class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEs7L0cjlHvjzOxlLNy_ETer_o4jKjRFZANaeBEMi52m5fr7ft8ETiIl1NTuSkifXiLUcydTPPFp-d8lIziu2nDiILay72Ugrv9dwEmBnoQMqhOgZOTADaNbId7e8hl9wNS5fg_HlFtFevNDqWDfJ-ahNufOCr7__IMiFG-zZB2L4eHVUec3K653Klugm-UIVbq_5feMVfOmTlaFi5uA7lfFhS9Wqr888wdWVExfPuXJg_Cd6k94OTrKMR9w0yBjl4codZ4Hz_U9tR" />
+                                    <div class="absolute top-2 left-2">
+                                        <div
+                                            class="w-8 h-8 rounded-full border-2 border-surface-darker overflow-hidden">
+                                            <img class="w-full h-full object-cover"
+                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt7vwL2y1EXYK0KpQnet9yr1s3bvzO3wy2jNG1cErhp7LnQyraaw_Tcl4Qn9E9V5eQv-5umkzK-Ne7EtLIN8Cse0zhDwypzblvmnCeFEWKhUOV_5ix5helP6hMOp_IMN6FKDnIqxWm5jy0j4j_Jpd9mwwIur2Wu7WZXFMWYwgAL2iFMqi7GtiWh6ZnSWv0V0Ig87MMOMQlXM7c9dpWLKGDk0bhINsYuozwWC7GvpkmmnVbywlsfoe6WO895Cjc-IXAtb8G3m9ZZhHG" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <h5 class="text-white font-medium text-sm truncate">Coco</h5>
+                                    <p class="text-xs text-gray-500 mt-1">Sent yesterday</p>
+                                </div>
+                            </div>
+                            <div
+                                class="bg-surface-darker rounded-xl overflow-hidden border border-white/5 group cursor-pointer hover:border-primary/30 transition-all">
+                                <div class="aspect-[16/10] relative">
+                                    <img alt="Good Dinosaur"
+                                        class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYwCtzm-wMqBBJrwuk0UcKNPNSDA5aPmMXPiRXixi5fzzMPygS9PYPGaJhfR8iflWM0lL-nyZU7qSpfu-ojco8SZDDakLeOugIVd2VWFBX0VMPXdb18EiISA_PMn-chFxaLvZAo86A_zY4AGweQUiAOaii0PG7jyOU8eJ46h33lbT2LNSbR_QVUX70y5C0E5M5ILnAm4ETiLsCoqYEhD1ZpGksfmnaQI9iNsYI7YHukIWYmZsleNv11Ks902n3egGFotKQZeqB-Fxj" />
+                                    <div class="absolute top-2 left-2">
+                                        <div
+                                            class="w-8 h-8 rounded-full border-2 border-surface-darker overflow-hidden">
+                                            <img class="w-full h-full object-cover"
+                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCybHSaroRzywb2kMh9DC9vU0FLJ8MRtv0cnZuwIxiV4ulmnzt1DPfwwMxQjpB_aCNhqaPfQR_TrHuyhXDGFHawDJcDPEi2AjyzSdxta9PvFHl_JVI5yhTabIj_2qzguL05o5S7mEi_C0RSNor3y89xZ2Z4Ij-l5cVE46V1oNJzdrk6ecIp-H-h2Q9tWmUiMhLLZ5cZEgpXjPzzbgq6nSGMGJqDYuM7APlMnk1qusgQDozVEQTAPtlf_3NekXO7d2Cvebuy6Rsa5L64" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <h5 class="text-white font-medium text-sm truncate">The Good Dinosaur</h5>
+                                    <p class="text-xs text-gray-500 mt-1">Sent 2 days ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-3 space-y-6">
+                <div class="glass-panel rounded-3xl p-6 h-full">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-white font-semibold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-accent-purple">rss_feed</span>
+                            Flux d'Activité
+                        </h3>
+                        <a class="text-xs text-gray-400 hover:text-white" href="#">View All</a>
+                    </div>
+                    <div
+                        class="space-y-6 relative before:absolute before:inset-y-0 before:left-4 before:w-px before:bg-white/10 before:z-0">
+                        <div class="relative z-10 flex gap-4 group">
+                            <div
+                                class="w-8 h-8 flex-shrink-0 rounded-full bg-surface-darker border-2 border-accent-purple overflow-hidden">
+                                <img alt="User" class="w-full h-full object-cover"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDb1yr4M1QhsbEhf7ujRvdqZwG0euRTJX4vj3Te6bPa5sbyzYrSpyDoujYSHUnB5RY3vRDHmlc5JlH1w-n_c0zVXBDJ-ifV3GvxV4gMyanXUifBKeLWRUqjy68WBkiLRk-ptZ9ga2AiyDz58ITunpzWGwRqN5SnZCZawK0Ex2V1y_mb9vyJndpJZmQQIYhAWXOFhhK5U36J72CUaOCHvuMyJ1K2s9CNouMDGUmQ_RtvF-WmC4eWlsuaut037ZTitmDJqlm0FdsZblq6" />
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-300"><span class="font-bold text-white">Emma</span> rated
+                                    <span class="text-white italic">Monsters, Inc.</span></p>
+                                <div class="flex text-yellow-400 text-xs my-1">
+                                    <span class="material-symbols-outlined text-[14px] fill-current">star</span>
+                                    <span class="material-symbols-outlined text-[14px] fill-current">star</span>
+                                    <span class="material-symbols-outlined text-[14px] fill-current">star</span>
+                                    <span class="material-symbols-outlined text-[14px] fill-current">star</span>
+                                    <span class="material-symbols-outlined text-[14px] fill-current">star_half</span>
+                                </div>
+                                <p class="text-xs text-gray-500">10 mins ago</p>
+                            </div>
+                        </div>
+                        <div class="relative z-10 flex gap-4 group">
+                            <div
+                                class="w-8 h-8 flex-shrink-0 rounded-full bg-surface-darker border-2 border-blue-500 overflow-hidden">
+                                <img alt="User" class="w-full h-full object-cover"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPPzB0BMe2Fqclp_NPXM8z0Sj4MFdRZJKGrTUrxkD_rI0Hry6XDXrwArZN1mhMEjJiSJDwzviXHXSVnyTGCLtURTxnA7JWfPmoUMkJKQMEehxVik2YjF-a21ypeq8kFExWmZVUma0jcaBNNmxq2dzXFHODNvNtgZvFf6V0r4f8vO9lVDdrDCpiSTu_Lml--ZE-yCfofXOBcCEipiHl5Rn9EZsz2qFm2Y3CIseg-Z_GxhUhJBhGy-KUgVd3JYcSgZWM471canlbVuXC" />
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-300"><span class="font-bold text-white">John</span> added 3
+                                    movies to <span class="text-blue-400">"Sci-Fi Favs"</span></p>
+                                <div class="flex -space-x-2 mt-2 overflow-hidden py-1">
+                                    <img alt=""
+                                        class="inline-block h-8 w-6 rounded ring-2 ring-surface-dark object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB3akG_vgCzAHQZTeIeeWK_hNZLR69mz395fHDoYo5d_IhrN88Fa4UfJ-jE0ca_9FlQ0AOjX4MKOQUzw06Nr_YQWKh2whBFvrQj0FP7DBRLA3YB8nZnrCdYjWIcbed6qe99_DgmxhnsXb-4GEYMVHlrTFwlApALVF5RblP4tKsc2aG71_BakXSjSpJTPnS4vTAgVV8mp4wn2tdhC5voORygKM2_F2hdjOpqDqDGc403oFDVwxNwpw0BuMxFZAvSRjC-jzbOkXt6sZo" />
+                                    <img alt=""
+                                        class="inline-block h-8 w-6 rounded ring-2 ring-surface-dark object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsbYANaMwwdA5fENLHUAxCXfzB_hUrI7HsrWl31ZdvBeuESKs3YON81WuMZlZiQfwuG08hF2BZnv4dy_wKKpH_2b_uAPOfOAwWPTneRugyASXI_CyOTaeCoq2OUBqC5l5vd6l-HG7KhoEI5iX1ILp6wGrv3AR1nYeawssfqZXBtNsdp3VlMVaigiC0uX9wbb0FhSqbUtb_CmWBP9PEWSC_jaZH8jEc_c0GILZNjD-dTlYEHOxTT9n2HLClRZiG4m7xC4q2XOKErKX9" />
+                                    <div
+                                        class="h-8 w-6 rounded bg-surface-darker flex items-center justify-center text-[10px] text-gray-400 ring-2 ring-surface-dark border border-white/5">
+                                        +1</div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">1 hour ago</p>
+                            </div>
+                        </div>
+                        <div class="relative z-10 flex gap-4 group">
+                            <div
+                                class="w-8 h-8 flex-shrink-0 rounded-full bg-surface-darker border-2 border-pink-500 overflow-hidden">
+                                <img alt="User" class="w-full h-full object-cover"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfSW7mEPsnd0xft4sGWPheqgbCtUFOllv0_-5CKqeJSwxhSrWn4aLu4kDGFN-RRaqN9XekZzeV5UsYy8wHVlh9h68YjRB5gAXi-LjupY-ggulQSx3XKcckcyXFtCGNZ16v8zT0URhgFlNWNl88ITA9CDZhYoRxYDXiVquKWxudgQcyXoSnAlsGGDuJD7m209eIKNuoVeY-HETBGy4nPcfIdxrXM1lJGQ68kgUIzB8VDHFN8wmUNvXHGQ3081cVFVVo_-5sz1-AB_IX" />
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-300"><span class="font-bold text-white">Lisa</span> started
+                                    following <span class="font-bold text-white">Director Spielberg</span></p>
+                                <button
+                                    class="mt-2 text-xs bg-white/5 hover:bg-white/10 px-3 py-1 rounded-md text-white transition-colors border border-white/5">Follow
+                                    too</button>
+                                <p class="text-xs text-gray-500 mt-2">3 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="relative z-10 flex gap-4 group">
+                            <div
+                                class="w-8 h-8 flex-shrink-0 rounded-full bg-surface-darker border-2 border-emerald-500 overflow-hidden">
+                                <img alt="User" class="w-full h-full object-cover"
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL848mt_2tPKZLKqeJJBM-Lwvyk4vnOib8Ft9fP-Bbq_8N2s-I7D7nMV2GVQOb4IR1PnOkTU-L5guKicaRZYzPNd3W8YZsJwPYE84lnh6xa9gSUoLLxLji8Xl9qEJy-T0QSrZHFpvfw_aH2dvJZKBc075XlIruLJfGUjqi4BGpCtZ7GV7HtBs0rWWz5e6nRhDYDWaINot5eli5l3A5lq64SRA5TnbT9RFS5bHc83_npLHdfAnoe1gzA7Xk7gqvKKXihsB4OxjWZUPX" />
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-300">You watched <span class="text-white italic">Raya</span>
+                                </p>
+                                <div class="mt-1 h-1 w-20 bg-gray-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary w-full"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Yesterday</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="mt-8 p-4 bg-gradient-to-r from-accent-purple/10 to-transparent rounded-xl border border-accent-purple/20">
+                        <h4 class="text-white font-bold text-sm mb-1">Community Challenge</h4>
+                        <p class="text-xs text-gray-400 mb-3">Watch 5 horrors this month</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex -space-x-2">
+                                <span
+                                    class="flex h-6 w-6 items-center justify-center rounded-full ring-2 ring-surface-dark bg-gray-800 text-[8px] text-white">JD</span>
+                                <span
+                                    class="flex h-6 w-6 items-center justify-center rounded-full ring-2 ring-surface-dark bg-gray-700 text-[8px] text-white">AM</span>
+                                <span
+                                    class="flex h-6 w-6 items-center justify-center rounded-full ring-2 ring-surface-dark bg-gray-600 text-[8px] text-white">+12</span>
+                            </div>
+                            <button
+                                class="text-xs text-accent-purple hover:text-white font-medium transition-colors">Join</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div class="fixed bottom-6 right-6 z-50">
+        <button class="bg-primary text-black p-3 rounded-full shadow-lg hover:scale-110 transition-transform"
+            onclick="document.documentElement.classList.toggle('dark')">
+            <span class="material-symbols-outlined block dark:hidden">dark_mode</span>
+            <span class="material-symbols-outlined hidden dark:block">light_mode</span>
+        </button>
+    </div>
+    <script>
+        // Check for dark mode preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
+</body>
+
+</html>

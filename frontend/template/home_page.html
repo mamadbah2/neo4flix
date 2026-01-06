@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empire Streami - Home</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        netflixRed: '#E50914',
+                        darkRed: '#B20710',
+                        pureBlack: '#000000',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    screens: {
+                        '3xl': '1920px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Styles de base */
+        body { background-color: #000; color: #fff; scroll-behavior: smooth; }
+        
+        /* Transitions du Header */
+        #main-header { transition: transform 0.4s ease, background-color 0.4s ease; }
+        .header-hidden { transform: translateY(-100%); }
+
+        /* Transitions du Hero */
+        .hero-bg { transition: opacity 1.5s ease-in-out; }
+
+        /* Barre de défilement personnalisée (Cachée pour les sliders) */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* --- STYLE PRIME VIDEO AVEC DIMENSIONS AGRANDIES --- */
+        .prime-card {
+            /* Taille cible : 267px de large pour le portrait */
+            width: 267px; 
+            height: 401px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+        }
+
+        .prime-card:hover {
+            /* Largeur paysage étendue (ratio ~16:9 basé sur la hauteur) */
+            width: 475px; 
+        }
+
+        .img-portrait { opacity: 1; transition: opacity 0.4s ease; }
+        .img-landscape { opacity: 0; transition: opacity 0.4s ease; position: absolute; inset: 0; }
+
+        .prime-card:hover .img-portrait { opacity: 0; }
+        .prime-card:hover .img-landscape { opacity: 1; }
+
+        .card-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease 0.1s;
+        }
+        .prime-card:hover .card-overlay { opacity: 1; }
+
+        /* --- CHIFFRES GÉANTS POUR LE TOP 10 (Ajustés pour posters larges) --- */
+        .giant-number {
+            font-size: 18rem;
+            line-height: 1;
+            -webkit-text-stroke: 4px #444;
+            color: #000;
+            font-weight: 900;
+            position: absolute;
+            left: -100px; /* Décalage plus grand pour posters de 267px */
+            bottom: -40px;
+            z-index: 0;
+            transition: all 0.4s ease;
+            user-select: none;
+        }
+        .top10-card:hover .giant-number {
+            -webkit-text-stroke: 4px #fff;
+            transform: translateX(-15px) scale(1.05);
+        }
+
+        .top10-card {
+            width: 267px;
+            height: 401px;
+        }
+
+        /* Visibilité des flèches */
+        .row-container:hover .nav-arrow { opacity: 0.7; }
+        .nav-arrow:hover { opacity: 1 !important; transform: scale(1.1); background-color: rgba(0,0,0,0.8); }
+    </style>
+</head>
+<body class="font-sans antialiased overflow-x-hidden">
+
+    <!-- Header / Navigation -->
+    <header id="main-header" class="fixed top-0 w-full z-[100] px-6 md:px-16 py-5 flex items-center justify-between bg-transparent">
+        <div class="flex items-center space-x-10">
+            <h1 class="text-netflixRed text-2xl md:text-4xl font-extrabold tracking-tighter uppercase cursor-pointer">Empire Streami</h1>
+            <nav class="hidden lg:flex space-x-8 text-base font-medium text-gray-300">
+                <a href="#" class="text-white hover:text-white transition">Accueil</a>
+                <a href="#" class="hover:text-white transition">Séries</a>
+                <a href="#" class="hover:text-white transition">Films</a>
+                <a href="#" class="hover:text-white transition">Nouveautés</a>
+                <a href="#" class="hover:text-white transition">Ma liste</a>
+            </nav>
+        </div>
+        <div class="flex items-center space-x-6 text-xl">
+            <button class="hover:text-gray-400 transition"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <div class="w-10 h-10 rounded bg-darkRed overflow-hidden border-2 border-transparent hover:border-white transition cursor-pointer shadow-lg">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative w-full h-[90vh] overflow-hidden flex items-center">
+        <div id="hero-bg-container" class="absolute inset-0 z-0">
+            <div class="hero-bg absolute inset-0 bg-cover bg-center" style="background-image: url('https://picsum.photos/id/10/1920/1080'); opacity: 1;"></div>
+            <div class="hero-bg absolute inset-0 bg-cover bg-center" style="background-image: url('https://picsum.photos/id/20/1920/1080'); opacity: 0;"></div>
+        </div>
+        <div class="absolute inset-0 z-10 bg-gradient-to-r from-pureBlack via-transparent to-transparent opacity-90"></div>
+        <div class="absolute inset-0 z-10 bg-gradient-to-t from-pureBlack via-pureBlack/10 to-transparent"></div>
+
+        <div class="relative z-20 px-6 md:px-16 max-w-4xl space-y-8">
+            <h2 id="hero-title" class="text-6xl md:text-8xl font-black leading-tight drop-shadow-lg">L'ODYSSEE DU DESTIN</h2>
+            <p id="hero-description" class="text-gray-200 text-xl max-w-2xl leading-relaxed">Plongez dans un univers où les dieux et les mortels s'affrontent pour le contrôle de l'éternité. Un chef-d'œuvre visuel maintenant disponible en 4K.</p>
+            <div class="flex items-center space-x-5 pt-4">
+                <button class="bg-white text-black px-10 py-4 rounded font-bold text-lg flex items-center space-x-3 hover:bg-gray-200 transition active:scale-95"><i class="fa-solid fa-play"></i> <span>Lecture</span></button>
+                <button class="bg-gray-500/30 text-white px-10 py-4 rounded font-bold text-lg flex items-center space-x-3 hover:bg-gray-500/50 transition backdrop-blur-xl active:scale-95"><i class="fa-solid fa-circle-info"></i> <span>Plus d'infos</span></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Rows -->
+    <div class="relative z-30 -mt-40 space-y-20 pb-24">
+        
+        <!-- ROW 1: TOP 10 (Agrandie) -->
+        <section class="row-container px-6 md:px-16 relative">
+            <h3 class="text-2xl md:text-3xl font-bold mb-6 ml-24">Top 10 en France aujourd'hui</h3>
+            
+            <div class="relative group">
+                <button onclick="scrollRow('top10-slider', 'left')" class="nav-arrow absolute left-0 top-0 bottom-0 z-40 w-16 bg-black/40 opacity-0 flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-chevron-left text-3xl"></i>
+                </button>
+                <button onclick="scrollRow('top10-slider', 'right')" class="nav-arrow absolute right-0 top-0 bottom-0 z-40 w-16 bg-black/40 opacity-0 flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-chevron-right text-3xl"></i>
+                </button>
+
+                <div id="top10-slider" class="flex space-x-32 overflow-x-auto no-scrollbar py-10 px-32">
+                    <!-- Top 1 Card -->
+                    <div class="top10-card relative flex-shrink-0 transition-transform duration-300 hover:scale-105 cursor-pointer">
+                        <span class="giant-number">1</span>
+                        <img src="https://picsum.photos/id/101/400/600" class="relative z-10 w-full h-full object-cover rounded shadow-2xl border border-white/5" alt="Movie">
+                    </div>
+                    <!-- Top 2 -->
+                    <div class="top10-card relative flex-shrink-0 transition-transform duration-300 hover:scale-105 cursor-pointer">
+                        <span class="giant-number">2</span>
+                        <img src="https://picsum.photos/id/102/400/600" class="relative z-10 w-full h-full object-cover rounded shadow-2xl border border-white/5" alt="Movie">
+                    </div>
+                    <!-- Top 3 -->
+                    <div class="top10-card relative flex-shrink-0 transition-transform duration-300 hover:scale-105 cursor-pointer">
+                        <span class="giant-number">3</span>
+                        <img src="https://picsum.photos/id/103/400/600" class="relative z-10 w-full h-full object-cover rounded shadow-2xl border border-white/5" alt="Movie">
+                    </div>
+                    <!-- Top 4 -->
+                    <div class="top10-card relative flex-shrink-0 transition-transform duration-300 hover:scale-105 cursor-pointer">
+                        <span class="giant-number">4</span>
+                        <img src="https://picsum.photos/id/104/400/600" class="relative z-10 w-full h-full object-cover rounded shadow-2xl border border-white/5" alt="Movie">
+                    </div>
+                    <!-- Top 5 -->
+                    <div class="top10-card relative flex-shrink-0 transition-transform duration-300 hover:scale-105 cursor-pointer">
+                        <span class="giant-number">5</span>
+                        <img src="https://picsum.photos/id/105/400/600" class="relative z-10 w-full h-full object-cover rounded shadow-2xl border border-white/5" alt="Movie">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROW 2: RECOMMANDÉ (Agrandie avec Expansion) -->
+        <section class="row-container px-6 md:px-16 relative">
+            <h3 class="text-2xl md:text-3xl font-bold mb-6">Recommandé pour vous</h3>
+            
+            <div class="relative group">
+                <button onclick="scrollRow('prime-slider', 'left')" class="nav-arrow absolute left-0 top-0 bottom-0 z-40 w-14 bg-black/40 opacity-0 flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-chevron-left text-2xl"></i>
+                </button>
+                <button onclick="scrollRow('prime-slider', 'right')" class="nav-arrow absolute right-0 top-0 bottom-0 z-40 w-14 bg-black/40 opacity-0 flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-chevron-right text-2xl"></i>
+                </button>
+
+                <div id="prime-slider" class="flex space-x-3 overflow-x-auto no-scrollbar py-12">
+                    <!-- Prime Card 1 -->
+                    <div class="prime-card relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer shadow-2xl group/item">
+                        <img src="https://picsum.photos/id/201/300/450" class="img-portrait w-full h-full object-cover" alt="Portrait">
+                        <img src="https://picsum.photos/id/201/800/450" class="img-landscape w-full h-full object-cover" alt="Landscape">
+                        <div class="card-overlay absolute inset-0 z-20 flex flex-col justify-end p-6">
+                            <h4 class="font-bold text-xl truncate uppercase tracking-tight">Le Choc des Titans</h4>
+                            <div class="flex items-center space-x-4 mt-3">
+                                <button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-gray-200 transition"><i class="fa-solid fa-play text-sm"></i></button>
+                                <button class="w-10 h-10 rounded-full border-2 border-white/50 flex items-center justify-center hover:bg-white/20 transition"><i class="fa-solid fa-plus text-sm"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Repeat for demo -->
+                    <div class="prime-card relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer shadow-2xl group/item">
+                        <img src="https://picsum.photos/id/202/300/450" class="img-portrait w-full h-full object-cover" alt="Portrait">
+                        <img src="https://picsum.photos/id/202/800/450" class="img-landscape w-full h-full object-cover" alt="Landscape">
+                        <div class="card-overlay absolute inset-0 z-20 flex flex-col justify-end p-6">
+                            <h4 class="font-bold text-xl">STRANGER THINGS</h4>
+                            <div class="flex items-center space-x-4 mt-3"><button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play text-sm"></i></button></div>
+                        </div>
+                    </div>
+                    <div class="prime-card relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer shadow-2xl group/item">
+                        <img src="https://picsum.photos/id/203/300/450" class="img-portrait w-full h-full object-cover" alt="Portrait">
+                        <img src="https://picsum.photos/id/203/800/450" class="img-landscape w-full h-full object-cover" alt="Landscape">
+                        <div class="card-overlay absolute inset-0 z-20 flex flex-col justify-end p-6">
+                            <h4 class="font-bold text-xl">THE WITCHER</h4>
+                            <div class="flex items-center space-x-4 mt-3"><button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play text-sm"></i></button></div>
+                        </div>
+                    </div>
+                    <div class="prime-card relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer shadow-2xl group/item">
+                        <img src="https://picsum.photos/id/204/300/450" class="img-portrait w-full h-full object-cover" alt="Portrait">
+                        <img src="https://picsum.photos/id/204/800/450" class="img-landscape w-full h-full object-cover" alt="Landscape">
+                        <div class="card-overlay absolute inset-0 z-20 flex flex-col justify-end p-6">
+                            <h4 class="font-bold text-xl">BLACK MIRROR</h4>
+                            <div class="flex items-center space-x-4 mt-3"><button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play text-sm"></i></button></div>
+                        </div>
+                    </div>
+                    <div class="prime-card relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer shadow-2xl group/item">
+                        <img src="https://picsum.photos/id/205/300/450" class="img-portrait w-full h-full object-cover" alt="Portrait">
+                        <img src="https://picsum.photos/id/205/800/450" class="img-landscape w-full h-full object-cover" alt="Landscape">
+                        <div class="card-overlay absolute inset-0 z-20 flex flex-col justify-end p-6">
+                            <h4 class="font-bold text-xl">THE CROWN</h4>
+                            <div class="flex items-center space-x-4 mt-3"><button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play text-sm"></i></button></div>
+                        </div>
+                    </div>
+                    <div class="prime-card relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer shadow-2xl group/item">
+                        <img src="https://picsum.photos/id/206/300/450" class="img-portrait w-full h-full object-cover" alt="Portrait">
+                        <img src="https://picsum.photos/id/206/800/450" class="img-landscape w-full h-full object-cover" alt="Landscape">
+                        <div class="card-overlay absolute inset-0 z-20 flex flex-col justify-end p-6">
+                            <h4 class="font-bold text-xl">MONEY HEIST</h4>
+                            <div class="flex items-center space-x-4 mt-3"><button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play text-sm"></i></button></div>
+                        </div>
+                    </div>
+                    <div class="prime-card relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer shadow-2xl group/item">
+                        <img src="https://picsum.photos/id/207/300/450" class="img-portrait w-full h-full object-cover" alt="Portrait">
+                        <img src="https://picsum.photos/id/207/800/450" class="img-landscape w-full h-full object-cover" alt="Landscape">
+                        <div class="card-overlay absolute inset-0 z-20 flex flex-col justify-end p-6">
+                            <h4 class="font-bold text-xl">VANDAL</h4>
+                            <div class="flex items-center space-x-4 mt-3"><button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play text-sm"></i></button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- 1. Logique du Header (Scroll) ---
+        let lastScrollTop = 0;
+        const header = document.getElementById('main-header');
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            header.style.backgroundColor = scrollTop > 100 ? 'rgba(0,0,0,0.95)' : 'transparent';
+            header.style.paddingTop = scrollTop > 100 ? '1rem' : '1.25rem';
+            header.style.paddingBottom = scrollTop > 100 ? '1rem' : '1.25rem';
+
+            if (scrollTop > lastScrollTop && scrollTop > 300) header.classList.add('header-hidden');
+            else header.classList.remove('header-hidden');
+            lastScrollTop = scrollTop;
+        });
+
+        // --- 2. Logique de défilement des lignes ---
+        function scrollRow(sliderId, direction) {
+            const slider = document.getElementById(sliderId);
+            const scrollAmount = slider.clientWidth * 0.85; 
+            if (direction === 'left') {
+                slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            } else {
+                slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            }
+        }
+
+        // --- 3. Animation du Hero Slider ---
+        const heroBgLayers = document.querySelectorAll('.hero-bg');
+        let heroIdx = 0;
+        setInterval(() => {
+            const current = heroBgLayers[heroIdx % 2];
+            const next = heroBgLayers[(heroIdx + 1) % 2];
+            next.style.opacity = '1';
+            current.style.opacity = '0';
+            heroIdx++;
+        }, 8000);
+    </script>
+</body>
+</html>

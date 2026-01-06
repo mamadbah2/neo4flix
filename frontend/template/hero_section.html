@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empire Streami - Home</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        netflixRed: '#E50914',
+                        darkRed: '#B20710',
+                        pureBlack: '#000000',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth transitions for the header */
+        #main-header {
+            transition: transform 0.4s ease-in-out, background-color 0.4s ease-in-out;
+        }
+        .header-hidden {
+            transform: translateY(-100%);
+        }
+
+        /* Hero Image Transitions */
+        .hero-bg {
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E50914;
+            border-radius: 10px;
+        }
+
+        /* Movie Card Hover Effect */
+        .movie-card {
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .movie-card:hover {
+            transform: scale(1.1);
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="bg-pureBlack text-white font-sans antialiased overflow-x-hidden">
+
+    <!-- Header / Navigation -->
+    <header id="main-header" class="fixed top-0 w-full z-[100] px-4 md:px-12 py-4 flex items-center justify-between bg-transparent">
+        <div class="flex items-center space-x-8">
+            <h1 class="text-netflixRed text-2xl md:text-3xl font-extrabold tracking-tighter uppercase">Empire Streami</h1>
+            <nav class="hidden lg:flex space-x-6 text-sm font-medium text-gray-300">
+                <a href="#" class="text-white hover:text-white transition">Accueil</a>
+                <a href="#" class="hover:text-white transition">Séries</a>
+                <a href="#" class="hover:text-white transition">Films</a>
+                <a href="#" class="hover:text-white transition">Nouveautés</a>
+                <a href="#" class="hover:text-white transition">Ma liste</a>
+            </nav>
+        </div>
+        <div class="flex items-center space-x-5 text-lg">
+            <button class="hover:text-gray-400 transition"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button class="hover:text-gray-400 transition relative">
+                <i class="fa-solid fa-bell"></i>
+                <span class="absolute -top-1 -right-1 bg-netflixRed text-[10px] w-4 h-4 rounded-full flex items-center justify-center">3</span>
+            </button>
+            <div class="w-8 h-8 rounded bg-darkRed flex items-center justify-center cursor-pointer overflow-hidden border-2 border-transparent hover:border-white transition">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative w-full h-screen overflow-hidden flex items-center">
+        <!-- Background Images (Slider Layers) -->
+        <div id="hero-bg-container" class="absolute inset-0 z-0">
+            <div class="hero-bg absolute inset-0 bg-cover bg-center" style="background-image: url('https://picsum.photos/id/10/1920/1080'); opacity: 1;"></div>
+            <div class="hero-bg absolute inset-0 bg-cover bg-center" style="background-image: url('https://picsum.photos/id/20/1920/1080'); opacity: 0;"></div>
+        </div>
+
+        <!-- Gradients for depth -->
+        <div class="absolute inset-0 z-10 bg-gradient-to-r from-pureBlack via-transparent to-transparent opacity-80"></div>
+        <div class="absolute inset-0 z-10 bg-gradient-to-t from-pureBlack via-transparent to-transparent"></div>
+
+        <!-- Content Area -->
+        <div class="relative z-20 px-4 md:px-12 max-w-3xl space-y-6">
+            <div class="flex items-center space-x-2 text-netflixRed font-bold uppercase tracking-widest text-xs md:text-sm">
+                <i class="fa-solid fa-clapperboard"></i>
+                <span>Exclusivité Empire</span>
+            </div>
+            
+            <h2 id="hero-title" class="text-5xl md:text-7xl font-black leading-tight drop-shadow-2xl">
+                L'ODYSSEE DU DESTIN
+            </h2>
+
+            <div class="flex items-center space-x-4 text-sm md:text-base font-semibold">
+                <span class="text-green-500">98% Match</span>
+                <span>2024</span>
+                <span class="border border-gray-500 px-2 py-0.5 text-xs rounded">16+</span>
+                <span>2h 15m</span>
+                <span class="bg-gray-800/60 px-2 py-0.5 text-xs rounded">Ultra HD 4K</span>
+            </div>
+
+            <p id="hero-description" class="text-gray-200 text-base md:text-lg max-w-xl line-clamp-3 md:line-clamp-none leading-relaxed">
+                Plongez dans un univers où les dieux et les mortels s'affrontent pour le contrôle de l'éternité. Un voyage épique qui redéfinit les limites de l'imagination et du courage.
+            </p>
+
+            <div class="flex items-center space-x-4 pt-4">
+                <button class="bg-white text-black px-6 md:px-10 py-3 rounded-md font-bold text-lg flex items-center space-x-2 hover:bg-gray-200 transition-all active:scale-95">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Lecture</span>
+                </button>
+                <button class="bg-gray-500/40 text-white px-6 md:px-10 py-3 rounded-md font-bold text-lg flex items-center space-x-2 hover:bg-gray-500/60 transition-all backdrop-blur-md active:scale-95">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Plus d'infos</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Slider Indicators -->
+        <div class="absolute bottom-10 right-10 z-30 flex space-x-2">
+            <div class="slider-dot w-12 h-1 bg-netflixRed transition-all cursor-pointer"></div>
+            <div class="slider-dot w-12 h-1 bg-gray-600 transition-all cursor-pointer"></div>
+            <div class="slider-dot w-12 h-1 bg-gray-600 transition-all cursor-pointer"></div>
+        </div>
+    </section>
+
+    <!-- Secondary Section (For Scroll Demo) -->
+    <section class="py-12 px-4 md:px-12 space-y-8 relative z-20 -mt-20">
+        <h3 class="text-xl md:text-2xl font-bold tracking-tight">Tendances Actuelles</h3>
+        
+        <!-- Movie Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <!-- Movie Card -->
+            <div class="movie-card relative aspect-[2/3] bg-gray-900 rounded-md cursor-pointer overflow-hidden group shadow-lg">
+                <img src="https://picsum.photos/id/101/400/600" alt="Movie" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-3">
+                    <button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-gray-200"><i class="fa-solid fa-play"></i></button>
+                    <button class="w-10 h-10 rounded-full bg-gray-800 text-white border border-white/30 flex items-center justify-center hover:bg-gray-700"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            </div>
+            <!-- Repeat cards -->
+            <div class="movie-card relative aspect-[2/3] bg-gray-900 rounded-md cursor-pointer overflow-hidden group shadow-lg">
+                <img src="https://picsum.photos/id/102/400/600" alt="Movie" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-3">
+                    <button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play"></i></button>
+                </div>
+            </div>
+            <div class="movie-card relative aspect-[2/3] bg-gray-900 rounded-md cursor-pointer overflow-hidden group shadow-lg">
+                <img src="https://picsum.photos/id/103/400/600" alt="Movie" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-3">
+                    <button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play"></i></button>
+                </div>
+            </div>
+            <div class="movie-card relative aspect-[2/3] bg-gray-900 rounded-md cursor-pointer overflow-hidden group shadow-lg">
+                <img src="https://picsum.photos/id/104/400/600" alt="Movie" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-3">
+                    <button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play"></i></button>
+                </div>
+            </div>
+             <div class="movie-card relative aspect-[2/3] bg-gray-900 rounded-md cursor-pointer overflow-hidden group shadow-lg">
+                <img src="https://picsum.photos/id/105/400/600" alt="Movie" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-3">
+                    <button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play"></i></button>
+                </div>
+            </div>
+             <div class="movie-card relative aspect-[2/3] bg-gray-900 rounded-md cursor-pointer overflow-hidden group shadow-lg">
+                <img src="https://picsum.photos/id/106/400/600" alt="Movie" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-3">
+                    <button class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center"><i class="fa-solid fa-play"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Placeholder to enable scrolling -->
+    <div class="h-[100vh]"></div>
+
+    <script>
+        // --- 1. Header Logic (Hide/Show on Scroll) ---
+        let lastScrollTop = 0;
+        const header = document.getElementById('main-header');
+        
+        window.addEventListener('scroll', () => {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Background change logic
+            if (scrollTop > 50) {
+                header.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+            } else {
+                header.style.backgroundColor = 'transparent';
+            }
+
+            // Show/Hide on Scroll Direction
+            if (scrollTop > lastScrollTop && scrollTop > 200) {
+                // Scrolling down
+                header.classList.add('header-hidden');
+            } else {
+                // Scrolling up
+                header.classList.remove('header-hidden');
+            }
+            lastScrollTop = scrollTop;
+        });
+
+        // --- 2. Hero Slider Logic (Fade In/Out) ---
+        const movies = [
+            {
+                title: "L'ODYSSEE DU DESTIN",
+                description: "Plongez dans un univers où les dieux et les mortels s'affrontent pour le contrôle de l'éternité. Un voyage épique qui redéfinit les limites du courage.",
+                img: "https://picsum.photos/id/10/1920/1080"
+            },
+            {
+                title: "LE ROYAUME OUBLIÉ",
+                description: "Après des siècles de silence, la cité d'or refait surface. Une équipe d'archéologues se retrouve au milieu d'une guerre ancestrale.",
+                img: "https://picsum.photos/id/20/1920/1080"
+            },
+            {
+                title: "ECHO DANS LE VIDE",
+                description: "Dans les confins de l'espace, un signal mystérieux pourrait être la clé de la survie de l'humanité ou le début de sa fin.",
+                img: "https://picsum.photos/id/30/1920/1080"
+            }
+        ];
+
+        let currentIndex = 0;
+        const bgLayers = document.querySelectorAll('.hero-bg');
+        const titleEl = document.getElementById('hero-title');
+        const descEl = document.getElementById('hero-description');
+        const dots = document.querySelectorAll('.slider-dot');
+
+        function updateSlider() {
+            const nextIndex = (currentIndex + 1) % movies.length;
+            const currentMovie = movies[nextIndex];
+
+            // 1. Prepare Next Layer
+            const currentLayer = bgLayers[currentIndex % 2];
+            const nextLayer = bgLayers[(currentIndex + 1) % 2];
+
+            nextLayer.style.backgroundImage = `url('${currentMovie.img}')`;
+            
+            // 2. Animate Background
+            nextLayer.style.opacity = '1';
+            currentLayer.style.opacity = '0';
+
+            // 3. Animate Text (Simple Fade)
+            titleEl.style.opacity = '0';
+            descEl.style.opacity = '0';
+            
+            setTimeout(() => {
+                titleEl.innerText = currentMovie.title;
+                descEl.innerText = currentMovie.description;
+                titleEl.style.opacity = '1';
+                descEl.style.opacity = '1';
+            }, 500);
+
+            // 4. Update dots
+            dots.forEach((dot, idx) => {
+                dot.style.backgroundColor = idx === nextIndex ? '#E50914' : '#4b5563';
+            });
+
+            currentIndex = nextIndex;
+        }
+
+        // Initialize transition styles for text
+        titleEl.style.transition = 'opacity 0.8s ease-in-out';
+        descEl.style.transition = 'opacity 0.8s ease-in-out';
+
+        // Auto-slide every 6 seconds
+        setInterval(updateSlider, 6000);
+
+    </script>
+</body>
+</html>

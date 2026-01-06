@@ -6,6 +6,26 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      # Configuration CORS globale pour le frontend Angular
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:4200"
+              - "http://127.0.0.1:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            exposedHeaders:
+              - Authorization
+              - Content-Type
+            maxAge: 3600
       server:
         webflux:
           routes:
