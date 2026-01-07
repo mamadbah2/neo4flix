@@ -34,11 +34,19 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   
-  // Watchlist page (protected) - placeholder
+  // Watchlist page (protected)
   {
     path: 'watchlist',
-    loadComponent: () => import('./features/home/components/home.component')
-      .then(m => m.HomeComponent),
+    loadComponent: () => import('./features/watchlist/components/watchlist.component')
+      .then(m => m.WatchlistComponent),
+    canActivate: [authGuard]
+  },
+  
+  // Movie detail page (protected)
+  {
+    path: 'movie/:id',
+    loadComponent: () => import('./features/movies/components/movie-detail/movie-detail.component')
+      .then(m => m.MovieDetailComponent),
     canActivate: [authGuard]
   },
   

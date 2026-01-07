@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import sn.dev.movie_service.web.dto.responses.GenreResponse;
 import sn.dev.movie_service.web.dto.responses.MoviePageResponse;
 import sn.dev.movie_service.web.dto.responses.MovieResponse;
 import sn.dev.movie_service.web.dto.responses.SyncResponse;
@@ -51,6 +52,46 @@ public interface MovieController {
     ResponseEntity<MoviePageResponse> getNowPlayingMovies(
         @RequestParam(defaultValue = "fr-FR") String language,
         @RequestParam(defaultValue = "1") Integer page
+    );
+
+    /**
+     * Films à venir (prochaines sorties).
+     * Source: TMDb - Pas de stockage Neo4j.
+     */
+    @GetMapping("/discovery/upcoming")
+    ResponseEntity<MoviePageResponse> getUpcomingMovies(
+        @RequestParam(defaultValue = "fr-FR") String language,
+        @RequestParam(defaultValue = "1") Integer page
+    );
+
+    /**
+     * Films les plus populaires.
+     * Source: TMDb - Pas de stockage Neo4j.
+     */
+    @GetMapping("/discovery/popular")
+    ResponseEntity<MoviePageResponse> getPopularMovies(
+        @RequestParam(defaultValue = "fr-FR") String language,
+        @RequestParam(defaultValue = "1") Integer page
+    );
+
+    /**
+     * Films par genre.
+     * Source: TMDb - Pas de stockage Neo4j.
+     */
+    @GetMapping("/discovery/by-genre/{genreId}")
+    ResponseEntity<MoviePageResponse> getMoviesByGenre(
+        @PathVariable Integer genreId,
+        @RequestParam(defaultValue = "fr-FR") String language,
+        @RequestParam(defaultValue = "1") Integer page
+    );
+
+    /**
+     * Liste de tous les genres disponibles.
+     * Source: TMDb.
+     */
+    @GetMapping("/genres")
+    ResponseEntity<List<GenreResponse>> getAllGenres(
+        @RequestParam(defaultValue = "fr-FR") String language
     );
 
     /**

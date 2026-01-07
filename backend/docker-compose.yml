@@ -38,6 +38,7 @@ services:
       - "8082:8082"
     environment:
       <<: *neo-env
+      # TMDB_ACCESS_TOKEN: $${TMDB_ACCESS_TOKEN:eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1OTQxYzc0YmMyMmQ4MTUyMGQ0MTE2ZjViZWJlYWMxNiIsIm5iZiI6MTc2NzQzODEyMS44NjUsInN1YiI6IjY5NThmNzI5M2M3MzRiZGU3N2MzOWQ5ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.LGtRI0hfH_02j1rV6mA2W3Fa18QqdOlbj_11uGmU4B0}
     networks:
       - neo4flix-network
     healthcheck:

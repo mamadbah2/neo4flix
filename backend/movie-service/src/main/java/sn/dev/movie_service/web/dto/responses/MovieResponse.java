@@ -32,6 +32,9 @@ public class MovieResponse {
     private Integer runtime;
     private String tagline;
     
+    // URL de la bande-annonce YouTube (si disponible)
+    private String trailerUrl;
+    
     // Indique si le film est synchronisé dans Neo4j (pour les relations)
     private Boolean syncedInNeo4j;
 }

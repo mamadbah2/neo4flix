@@ -1,0 +1,61 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, catchError, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { MovieRecommendation, MoviePage } from '../interfaces/movie.interface';
+
+/**
+ * RecommendationService - Handles personalized movie recommendations
+ * All endpoints require authentication
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class RecommendationService {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/api/recommendations`;
+  private readonly moviesApiUrl = `${environment.apiUrl}/api/movies`;
+  private readonly defaultLanguage = 'fr-FR';
+
+  /**
+   * Get personalized recommendations for the current user
+   */
+  getRecommendations(): Observable<MovieRecommendation[]> {
+    return this.http.get<MovieRecommendation[]>(this.apiUrl).pipe(
+      catchError(error => {
+        console.error('Failed to get recommendations:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Get collaborative filtering recommendations
+   * (Based on users with similar taste)
+   */
+  getCollaborativeRecommendations(): Observable<MoviePage> {
+    const params = new HttpParams().set('language', this.defaultLanguage);
+
+    return this.http.get<MoviePage>(`${this.moviesApiUrl}/recommendations/collaborative`, { params }).pipe(
+      catchError(error => {
+        console.error('Failed to get collaborative recommendations:', error);
+        return of({ page: 1, totalPages: 0, totalResults: 0, results: [] });
+      })
+    );
+  }
+
+  /**
+   * Get genre-based recommendations
+   * (Based on user's preferred genres)
+   */
+  getGenreBasedRecommendations(): Observable<MoviePage> {
+    const params = new HttpParams().set('language', this.defaultLanguage);
+
+    return this.http.get<MoviePage>(`${this.moviesApiUrl}/recommendations/genre-based`, { params }).pipe(
+      catchError(error => {
+        console.error('Failed to get genre-based recommendations:', error);
+        return of({ page: 1, totalPages: 0, totalResults: 0, results: [] });
+      })
+    );
+  }
+}

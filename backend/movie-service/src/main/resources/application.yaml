@@ -24,7 +24,7 @@ spring:
 tmdb:
   api:
     base-url: https://api.themoviedb.org/3
-    access-token: ${TMDB_ACCESS_TOKEN:eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjNmU5MzQ4YjQ3MjJmZDJkMjRhZjU4Y2VmZDQzNWJhZCIsIm5iZiI6MTczNjMzNzM2NS45NTIsInN1YiI6IjY3N2UxZjA1MjNmZjNmZTJmYjY3OTk3ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.dCKsvJ1TFSfOz6_nkn2OM-EqsOYZE3e3dS12IqMFwrA}
+    access-token: ${TMDB_ACCESS_TOKEN:eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1OTQxYzc0YmMyMmQ4MTUyMGQ0MTE2ZjViZWJlYWMxNiIsIm5iZiI6MTc2NzQzODEyMS44NjUsInN1YiI6IjY5NThmNzI5M2M3MzRiZGU3N2MzOWQ5ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.LGtRI0hfH_02j1rV6mA2W3Fa18QqdOlbj_11uGmU4B0}
     image-base-url: https://image.tmdb.org/t/p
 
 # Configuration Feign
@@ -41,3 +41,14 @@ logging:
   level:
     org.springframework.data.neo4j: DEBUG
     sn.dev.movie_service.clients: DEBUG
+
+# Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always

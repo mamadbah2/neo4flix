@@ -1,0 +1,286 @@
+import { 
+  Component, OnInit, OnDestroy, AfterViewInit, 
+  inject, signal, computed, 
+  ViewChild, ElementRef, PLATFORM_ID, Inject 
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { NavbarComponent } from '../../../../shared/components/navbar/navbar.component';
+import { MovieRowComponent } from '../../../../shared/components/movie-row/movie-row.component';
+import { MovieService } from '../../../../core/services/movie.service';
+import { WatchlistService } from '../../../../core/services/watchlist.service';
+import { 
+  Movie, MovieRowConfig, 
+  getBackdropUrl, getReleaseYear, getYouTubeVideoId 
+} from '../../../../core/interfaces/movie.interface';
+
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
+/**
+ * MovieDetailComponent - Full movie detail page with trailer background
+ * 
+ * Features:
+ * - Hero with backdrop image
+ * - Auto-play YouTube trailer after 3 seconds (if available)
+ * - Mute/unmute control
+ * - Add to watchlist button
+ * - Movie synopsis and details
+ * - Similar movies row
+ */
+@Component({
+  selector: 'app-movie-detail',
+  standalone: true,
+  imports: [CommonModule, RouterLink, NavbarComponent, MovieRowComponent],
+  templateUrl: './movie-detail.component.html',
+  styles: [`
+    :host {
+      display: block;
+    }
+    
+    .hero-container {
+      min-height: 85vh;
+    }
+    
+    .hero-poster {
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .video-background {
+      pointer-events: none;
+    }
+    
+    .video-background iframe {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100vw;
+      height: 56.25vw; /* 16:9 aspect ratio */
+      min-height: 100vh;
+      min-width: 177.77vh; /* 16:9 aspect ratio */
+      transform: translate(-50%, -50%);
+    }
+    
+    .vignette-left {
+      background: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0) 100%);
+    }
+    
+    .vignette-bottom {
+      background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 20%, transparent 50%);
+    }
+    
+    .unmute-btn {
+      backdrop-filter: blur(4px);
+    }
+  `]
+})
+export class MovieDetailComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('youtubePlayer') youtubePlayerRef!: ElementRef<HTMLDivElement>;
+
+  private readonly route = inject(ActivatedRoute);
+  private readonly movieService = inject(MovieService);
+  private readonly watchlistService = inject(WatchlistService);
+
+  // State signals
+  readonly movie = signal<Movie | null>(null);
+  readonly isLoading = signal(true);
+  readonly showVideo = signal(false);
+  readonly isMuted = signal(true);
+
+  // Computed values
+  readonly videoId = computed(() => getYouTubeVideoId(this.movie()?.trailerUrl));
+  readonly backdropUrl = computed(() => getBackdropUrl(this.movie()?.backdropPath, 'original'));
+  readonly releaseYear = computed(() => getReleaseYear(this.movie()?.releaseDate));
+
+  // Similar movies config
+  readonly similarMoviesConfig: MovieRowConfig = {
+    id: 'similar',
+    title: 'Films similaires',
+    type: 'similar',
+    movieId: 0
+  };
+
+  // YouTube player instance
+  private player: any = null;
+  private playTimeout: ReturnType<typeof setTimeout> | null = null;
+  private readonly isBrowser: boolean;
+
+  constructor(@Inject(PLATFORM_ID) platformId: Object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
+
+  ngOnInit(): void {
+    // Load watchlist
+    this.watchlistService.loadWatchlist().subscribe();
+    
+    // Get movie ID from route and load movie
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.loadMovie(parseInt(id, 10));
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    if (this.isBrowser) {
+      this.loadYouTubeAPI();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.playTimeout) {
+      clearTimeout(this.playTimeout);
+    }
+    if (this.player) {
+      this.player.destroy();
+    }
+  }
+
+  /**
+   * Load movie details
+   */
+  private loadMovie(tmdbId: number): void {
+    this.isLoading.set(true);
+    this.showVideo.set(false);
+    
+    this.movieService.getMovieDetails(tmdbId).subscribe(movie => {
+      this.movie.set(movie);
+      this.isLoading.set(false);
+      
+      if (movie) {
+        // Update similar movies config
+        this.similarMoviesConfig.movieId = movie.tmdbId;
+        
+        // Schedule video playback if trailer exists
+        if (this.videoId() && this.isBrowser) {
+          this.scheduleVideoPlayback();
+        }
+      }
+    });
+  }
+
+  /**
+   * Load YouTube IFrame API
+   */
+  private loadYouTubeAPI(): void {
+    if (window.YT) {
+      return;
+    }
+
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+  }
+
+  /**
+   * Schedule video playback after 3 seconds
+   */
+  private scheduleVideoPlayback(): void {
+    this.playTimeout = setTimeout(() => {
+      this.initYouTubePlayer();
+    }, 3000);
+  }
+
+  /**
+   * Initialize YouTube player
+   */
+  private initYouTubePlayer(): void {
+    const videoId = this.videoId();
+    if (!videoId || !this.youtubePlayerRef?.nativeElement) return;
+
+    // Wait for API to be ready
+    if (!window.YT?.Player) {
+      setTimeout(() => this.initYouTubePlayer(), 500);
+      return;
+    }
+
+    this.player = new window.YT.Player(this.youtubePlayerRef.nativeElement, {
+      videoId: videoId,
+      playerVars: {
+        autoplay: 1,
+        mute: 1,
+        controls: 0,
+        showinfo: 0,
+        rel: 0,
+        loop: 1,
+        playlist: videoId,
+        modestbranding: 1,
+        iv_load_policy: 3,
+        disablekb: 1,
+        fs: 0,
+        playsinline: 1
+      },
+      events: {
+        onReady: (event: any) => {
+          event.target.playVideo();
+          this.showVideo.set(true);
+        },
+        onError: () => {
+          this.showVideo.set(false);
+        }
+      }
+    });
+  }
+
+  /**
+   * Toggle mute/unmute
+   */
+  toggleMute(): void {
+    if (!this.player) return;
+    
+    if (this.isMuted()) {
+      this.player.unMute();
+      this.isMuted.set(false);
+    } else {
+      this.player.mute();
+      this.isMuted.set(true);
+    }
+  }
+
+  /**
+   * Check if movie is in watchlist
+   */
+  isInWatchlist(): boolean {
+    const m = this.movie();
+    return m ? this.watchlistService.isInWatchlist(m.tmdbId) : false;
+  }
+
+  /**
+   * Toggle watchlist
+   */
+  toggleWatchlist(): void {
+    const m = this.movie();
+    if (m) {
+      this.watchlistService.toggleWatchlist(m).subscribe();
+    }
+  }
+
+  /**
+   * Format runtime to hours and minutes
+   */
+  formatRuntime(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+  }
+
+  /**
+   * Format date to French locale
+   */
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+}

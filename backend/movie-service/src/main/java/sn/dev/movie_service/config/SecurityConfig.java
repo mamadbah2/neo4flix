@@ -19,9 +19,12 @@ public class SecurityConfig {
         return http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                // Actuator endpoints pour health checks
+                .requestMatchers("/actuator/**").permitAll()
                 // Endpoints de discovery publics (TMDb direct)
                 .requestMatchers("/api/movies/discovery/**").permitAll()
                 .requestMatchers("/api/movies/search").permitAll()
+                .requestMatchers("/api/movies/genres").permitAll()
                 // Endpoint de détails public
                 .requestMatchers("/api/movies/{tmdbId}").permitAll()
                 // Endpoint de sync interne (accessible sans auth pour les services internes)

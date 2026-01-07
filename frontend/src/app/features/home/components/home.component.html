@@ -1,0 +1,35 @@
+<!-- Home Page - Neo4flix -->
+<div class="bg-black text-white min-h-screen">
+  <!-- Navbar -->
+  <app-navbar activePage="home" />
+  
+  <!-- Hero Slider -->
+  <app-hero-slider />
+
+  <!-- Content Rows -->
+  <div class="relative z-30 -mt-40 space-y-12 pb-24 px-6 md:px-16">
+    
+    <!-- Row: Trending (Top 10 style) -->
+    <app-movie-row [config]="rowConfigs[0]" />
+    
+    <!-- Row: Recommended for You -->
+    <app-movie-row [config]="rowConfigs[1]" />
+    
+    <!-- Genre Rows (dynamically loaded) -->
+    @for (config of genreRowConfigs(); track config.id) {
+      <app-movie-row [config]="config" />
+    }
+    
+    <!-- Row: Top Rated -->
+    <app-movie-row [config]="rowConfigs[2]" />
+    
+    <!-- Row: Now Playing -->
+    <app-movie-row [config]="rowConfigs[3]" />
+    
+    <!-- Row: Upcoming -->
+    <app-movie-row [config]="rowConfigs[4]" />
+    
+    <!-- Row: Popular (Top 10 style) -->
+    <app-movie-row [config]="rowConfigs[5]" />
+  </div>
+</div>

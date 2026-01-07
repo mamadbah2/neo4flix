@@ -59,37 +59,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
             Prêt à regarder Neo4flix ? Saisissez votre adresse e-mail pour vous abonner ou réactiver votre abonnement.
           </p>
           
-          <!-- Email Form -->
-          <div class="w-full max-w-3xl mx-auto animate-slide-up">
-            <form [formGroup]="emailForm" (ngSubmit)="onSubmit()" class="flex flex-col md:flex-row gap-3 items-stretch justify-center">
-              <div class="relative flex-grow text-left">
-                <input 
-                  type="email" 
-                  id="email" 
-                  formControlName="email"
-                  class="block w-full h-14 md:h-16 px-5 pt-5 pb-2 text-white bg-black/50 rounded border border-gray-500 focus:border-white focus:ring-2 focus:ring-white/20 peer appearance-none"
-                  [class.border-[#E50914]]="isEmailInvalid()"
-                  placeholder=" " />
-                <label 
-                  for="email" 
-                  class="absolute text-gray-400 duration-200 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">
-                  Adresse e-mail
-                </label>
-              </div>
-              <button
-                type="submit"
-                class="h-14 md:h-16 px-8 bg-[#E50914] hover:bg-[#B20710] text-white text-xl font-bold rounded-lg flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg shadow-[#E50914]/30 whitespace-nowrap duration-200">
-                Commencer
-                <i class="fa-solid fa-chevron-right text-lg"></i>
-              </button>
-            </form>
-            @if (isEmailInvalid()) {
-              <p class="text-[#E50914] text-sm mt-2 text-left">
-                <i class="fa-solid fa-circle-exclamation mr-1"></i>
-                Veuillez entrer une adresse e-mail valide.
-              </p>
-            }
-          </div>
+          
         </div>
       </main>
 
@@ -133,22 +103,6 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
           </div>
         </div>
       </section>
-
-      <!-- Footer -->
-      <footer class="relative z-20 bg-black/70 text-gray-500 py-10 px-6 md:px-12 border-t border-white/10 mt-auto">
-        <div class="max-w-4xl mx-auto">
-          <p class="mb-6 hover:underline cursor-pointer">Des questions ? Appelez le 0805-543-064</p>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-            <a href="#" class="hover:underline">FAQ</a>
-            <a href="#" class="hover:underline">Centre d'aide</a>
-            <a href="#" class="hover:underline">Conditions d'utilisation</a>
-            <a href="#" class="hover:underline">Confidentialité</a>
-            <a href="#" class="hover:underline">Préférences de cookies</a>
-            <a href="#" class="hover:underline">Informations sur l'entreprise</a>
-          </div>
-          <p class="mt-8 text-sm">© 2026 Neo4flix. Tous droits réservés.</p>
-        </div>
-      </footer>
     </div>
   `,
   styles: [`

@@ -15,12 +15,16 @@ import sn.dev.movie_service.exceptions.MovieNotFoundException;
 import sn.dev.movie_service.exceptions.TmdbApiException;
 import sn.dev.movie_service.services.MovieService;
 import sn.dev.movie_service.services.TmdbGenreMapping;
+import sn.dev.movie_service.web.dto.responses.GenreResponse;
 import sn.dev.movie_service.web.dto.responses.MoviePageResponse;
 import sn.dev.movie_service.web.dto.responses.MovieResponse;
 import sn.dev.movie_service.web.dto.responses.SyncResponse;
 import sn.dev.movie_service.web.dto.tmdb.TmdbGenreDto;
+import sn.dev.movie_service.web.dto.tmdb.TmdbGenreListResponse;
 import sn.dev.movie_service.web.dto.tmdb.TmdbMovieDto;
 import sn.dev.movie_service.web.dto.tmdb.TmdbPageResponse;
+import sn.dev.movie_service.web.dto.tmdb.TmdbVideoDto;
+import sn.dev.movie_service.web.dto.tmdb.TmdbVideosResponse;
 
 /**
  * Implémentation du service Movie.
@@ -72,6 +76,55 @@ public class MovieServiceImpl implements MovieService {
 
     @Override
     @Transactional(readOnly = true)
+    public MoviePageResponse getUpcomingMovies(String language, Integer page) {
+        try {
+            TmdbPageResponse<TmdbMovieDto> response = tmdbClient.getUpcomingMovies(language, page);
+            return mapToPageResponse(response);
+        } catch (FeignException e) {
+            throw new TmdbApiException("Impossible de récupérer les films à venir", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MoviePageResponse getPopularMovies(String language, Integer page) {
+        try {
+            TmdbPageResponse<TmdbMovieDto> response = tmdbClient.getPopularMovies(language, page);
+            return mapToPageResponse(response);
+        } catch (FeignException e) {
+            throw new TmdbApiException("Impossible de récupérer les films populaires", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MoviePageResponse getMoviesByGenre(Integer genreId, String language, Integer page) {
+        try {
+            TmdbPageResponse<TmdbMovieDto> response = tmdbClient.discoverMoviesByGenre(genreId, language, page, "popularity.desc");
+            return mapToPageResponse(response);
+        } catch (FeignException e) {
+            throw new TmdbApiException("Impossible de récupérer les films par genre", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GenreResponse> getAllGenres(String language) {
+        try {
+            TmdbGenreListResponse response = tmdbClient.getGenreList(language);
+            return response.getGenres().stream()
+                    .map(g -> GenreResponse.builder()
+                            .id(g.getId())
+                            .name(g.getName())
+                            .build())
+                    .toList();
+        } catch (FeignException e) {
+            throw new TmdbApiException("Impossible de récupérer la liste des genres", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public MoviePageResponse searchMovies(String query, String language, Integer page) {
         try {
             TmdbPageResponse<TmdbMovieDto> response = tmdbClient.searchMovies(query, language, page);
@@ -90,11 +143,14 @@ public class MovieServiceImpl implements MovieService {
             // 1. Récupérer les détails depuis TMDb
             TmdbMovieDto tmdbMovie = tmdbClient.getMovieDetails(tmdbId, language);
             
-            // 2. Vérifier si le film existe dans Neo4j
+            // 2. Récupérer les vidéos (bande-annonces)
+            String trailerUrl = fetchTrailerUrl(tmdbId, language);
+            
+            // 3. Vérifier si le film existe dans Neo4j
             boolean existsInNeo4j = movieRepository.existsByTmdbId(tmdbId);
             
-            // 3. Mapper vers la réponse enrichie
-            return mapToDetailedResponse(tmdbMovie, existsInNeo4j);
+            // 4. Mapper vers la réponse enrichie
+            return mapToDetailedResponse(tmdbMovie, existsInNeo4j, trailerUrl);
             
         } catch (FeignException.NotFound e) {
             throw new MovieNotFoundException(tmdbId);
@@ -222,7 +278,7 @@ public class MovieServiceImpl implements MovieService {
     /**
      * Mappe un film TMDb détaillé vers une réponse complète.
      */
-    private MovieResponse mapToDetailedResponse(TmdbMovieDto tmdbMovie, boolean syncedInNeo4j) {
+    private MovieResponse mapToDetailedResponse(TmdbMovieDto tmdbMovie, boolean syncedInNeo4j, String trailerUrl) {
         List<String> genreNames = new ArrayList<>();
         if (tmdbMovie.getGenres() != null) {
             genreNames = tmdbMovie.getGenres().stream()
@@ -248,8 +304,61 @@ public class MovieServiceImpl implements MovieService {
                 .genres(genreNames)
                 .runtime(tmdbMovie.getRuntime())
                 .tagline(tmdbMovie.getTagline())
+                .trailerUrl(trailerUrl)
                 .syncedInNeo4j(syncedInNeo4j)
                 .build();
+    }
+
+    /**
+     * Récupère l'URL de la bande-annonce YouTube d'un film.
+     */
+    private String fetchTrailerUrl(Long tmdbId, String language) {
+        try {
+            // Essayer d'abord dans la langue demandée
+            TmdbVideosResponse videosResponse = tmdbClient.getMovieVideos(tmdbId, language);
+            String trailerUrl = extractYoutubeTrailerUrl(videosResponse);
+            
+            // Si pas de trailer dans la langue demandée, essayer en anglais
+            if (trailerUrl == null && !"en-US".equals(language)) {
+                videosResponse = tmdbClient.getMovieVideos(tmdbId, "en-US");
+                trailerUrl = extractYoutubeTrailerUrl(videosResponse);
+            }
+            
+            return trailerUrl;
+        } catch (FeignException e) {
+            log.warn("Impossible de récupérer les vidéos pour le film {}: {}", tmdbId, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Extrait l'URL YouTube de la bande-annonce officielle.
+     */
+    private String extractYoutubeTrailerUrl(TmdbVideosResponse videosResponse) {
+        if (videosResponse == null || videosResponse.getResults() == null) {
+            return null;
+        }
+        
+        // Chercher d'abord une bande-annonce officielle
+        return videosResponse.getResults().stream()
+                .filter(v -> "YouTube".equalsIgnoreCase(v.getSite()))
+                .filter(v -> "Trailer".equalsIgnoreCase(v.getType()))
+                .filter(v -> Boolean.TRUE.equals(v.getOfficial()))
+                .findFirst()
+                .map(v -> "https://www.youtube.com/watch?v=" + v.getKey())
+                // Sinon, prendre n'importe quel trailer YouTube
+                .orElseGet(() -> videosResponse.getResults().stream()
+                        .filter(v -> "YouTube".equalsIgnoreCase(v.getSite()))
+                        .filter(v -> "Trailer".equalsIgnoreCase(v.getType()))
+                        .findFirst()
+                        .map(v -> "https://www.youtube.com/watch?v=" + v.getKey())
+                        // Sinon, prendre un teaser
+                        .orElseGet(() -> videosResponse.getResults().stream()
+                                .filter(v -> "YouTube".equalsIgnoreCase(v.getSite()))
+                                .filter(v -> "Teaser".equalsIgnoreCase(v.getType()))
+                                .findFirst()
+                                .map(v -> "https://www.youtube.com/watch?v=" + v.getKey())
+                                .orElse(null)));
     }
 
     /**
@@ -261,7 +370,8 @@ public class MovieServiceImpl implements MovieService {
         for (Long tmdbId : tmdbIds) {
             try {
                 TmdbMovieDto tmdbMovie = tmdbClient.getMovieDetails(tmdbId, language);
-                movies.add(mapToDetailedResponse(tmdbMovie, true));
+                String trailerUrl = fetchTrailerUrl(tmdbId, language);
+                movies.add(mapToDetailedResponse(tmdbMovie, true, trailerUrl));
             } catch (FeignException e) {
                 log.warn("Impossible de récupérer le film {} depuis TMDb: {}", tmdbId, e.getMessage());
             }

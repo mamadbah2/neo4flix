@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import sn.dev.movie_service.services.MovieService;
 import sn.dev.movie_service.web.controllers.MovieController;
+import sn.dev.movie_service.web.dto.responses.GenreResponse;
 import sn.dev.movie_service.web.dto.responses.MoviePageResponse;
 import sn.dev.movie_service.web.dto.responses.MovieResponse;
 import sn.dev.movie_service.web.dto.responses.SyncResponse;
@@ -40,6 +41,30 @@ public class MovieControllerImpl implements MovieController {
     public ResponseEntity<MoviePageResponse> getNowPlayingMovies(String language, Integer page) {
         MoviePageResponse response = movieService.getNowPlayingMovies(language, page);
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<MoviePageResponse> getUpcomingMovies(String language, Integer page) {
+        MoviePageResponse response = movieService.getUpcomingMovies(language, page);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<MoviePageResponse> getPopularMovies(String language, Integer page) {
+        MoviePageResponse response = movieService.getPopularMovies(language, page);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<MoviePageResponse> getMoviesByGenre(Integer genreId, String language, Integer page) {
+        MoviePageResponse response = movieService.getMoviesByGenre(genreId, language, page);
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<List<GenreResponse>> getAllGenres(String language) {
+        List<GenreResponse> genres = movieService.getAllGenres(language);
+        return ResponseEntity.ok(genres);
     }
 
     @Override

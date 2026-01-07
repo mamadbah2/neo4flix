@@ -178,7 +178,137 @@ GET http://localhost:5050/api/movies/discovery/trending?page=1&language=fr-FR
 
 **Auth:** ❌ Non requise
 
-### 4. Recherche de Films
+### 4. Discovery - Films à Venir (Prochaines Sorties)
+
+**Endpoint:** `GET /api/movies/discovery/upcoming`
+
+| Paramètre | Type | Défaut | Description |
+|-----------|------|--------|-------------|
+| `page` | number | 1 | Numéro de page |
+| `language` | string | "fr-FR" | Langue des résultats |
+
+**Auth:** ❌ Non requise
+
+**Exemple:**
+```http
+GET http://localhost:5050/api/movies/discovery/upcoming?page=1&language=fr-FR
+```
+
+### 5. Discovery - Films Populaires
+
+**Endpoint:** `GET /api/movies/discovery/popular`
+
+| Paramètre | Type | Défaut | Description |
+|-----------|------|--------|-------------|
+| `page` | number | 1 | Numéro de page |
+| `language` | string | "fr-FR" | Langue des résultats |
+
+**Auth:** ❌ Non requise
+
+**Exemple:**
+```http
+GET http://localhost:5050/api/movies/discovery/popular?page=1&language=fr-FR
+```
+
+### 6. Discovery - Films par Genre
+
+**Endpoint:** `GET /api/movies/discovery/by-genre/{genreId}`
+
+| Paramètre | Type | Description |
+|-----------|------|-------------|
+| `genreId` | number (path) | ID TMDb du genre (voir liste des genres) |
+| `page` | number | Numéro de page (défaut: 1) |
+| `language` | string | Langue des résultats (défaut: "fr-FR") |
+
+**Auth:** ❌ Non requise
+
+**Exemple:**
+```http
+GET http://localhost:5050/api/movies/discovery/by-genre/28?page=1&language=fr-FR
+```
+
+**IDs des Genres TMDb courants:**
+| ID | Genre |
+|----|-------|
+| 28 | Action |
+| 12 | Aventure |
+| 16 | Animation |
+| 35 | Comédie |
+| 80 | Crime |
+| 99 | Documentaire |
+| 18 | Drame |
+| 10751 | Familial |
+| 14 | Fantastique |
+| 36 | Histoire |
+| 27 | Horreur |
+| 10402 | Musique |
+| 9648 | Mystère |
+| 10749 | Romance |
+| 878 | Science-Fiction |
+| 10770 | Téléfilm |
+| 53 | Thriller |
+| 10752 | Guerre |
+| 37 | Western |
+
+**Response (200 OK):**
+```json
+{
+  "page": 1,
+  "totalPages": 500,
+  "totalResults": 10000,
+  "results": [
+    {
+      "tmdbId": 27205,
+      "title": "Inception",
+      "overview": "Dom Cobb est un voleur expérimenté...",
+      "posterPath": "/qmDpIHrmpJINaRKAfWQfftjCdyi.jpg",
+      "genres": ["Action", "Science-Fiction", "Aventure"]
+    }
+  ]
+}
+```
+
+### 7. Liste des Genres Disponibles
+
+**Endpoint:** `GET /api/movies/genres`
+
+| Paramètre | Type | Défaut | Description |
+|-----------|------|--------|-------------|
+| `language` | string | "fr-FR" | Langue des noms de genres |
+
+**Auth:** ❌ Non requise
+
+**Exemple:**
+```http
+GET http://localhost:5050/api/movies/genres?language=fr-FR
+```
+
+**Response (200 OK):**
+```json
+[
+  { "id": 28, "name": "Action" },
+  { "id": 12, "name": "Aventure" },
+  { "id": 16, "name": "Animation" },
+  { "id": 35, "name": "Comédie" },
+  { "id": 80, "name": "Crime" },
+  { "id": 99, "name": "Documentaire" },
+  { "id": 18, "name": "Drame" },
+  { "id": 10751, "name": "Familial" },
+  { "id": 14, "name": "Fantastique" },
+  { "id": 36, "name": "Histoire" },
+  { "id": 27, "name": "Horreur" },
+  { "id": 10402, "name": "Musique" },
+  { "id": 9648, "name": "Mystère" },
+  { "id": 10749, "name": "Romance" },
+  { "id": 878, "name": "Science-Fiction" },
+  { "id": 10770, "name": "Téléfilm" },
+  { "id": 53, "name": "Thriller" },
+  { "id": 10752, "name": "Guerre" },
+  { "id": 37, "name": "Western" }
+]
+```
+
+### 8. Recherche de Films
 
 **Endpoint:** `GET /api/movies/search`
 
@@ -254,6 +384,7 @@ GET http://localhost:5050/api/movies/27205?language=fr-FR
   "genres": ["Action", "Science-Fiction", "Aventure"],
   "runtime": 148,
   "tagline": "Votre esprit est la scène du crime.",
+  "trailerUrl": "https://www.youtube.com/watch?v=YoHD9XEInc0",
   "syncedInNeo4j": true
 }
 ```
@@ -674,6 +805,7 @@ export interface Movie {
   genres: string[];
   runtime?: number | null;
   tagline?: string | null;
+  trailerUrl?: string | null;  // URL YouTube de la bande-annonce
   syncedInNeo4j?: boolean;
 }
 
@@ -695,6 +827,15 @@ export interface SyncResponse {
   title: string;
   created: boolean;
   message: string;
+}
+
+// ===========================================
+// GENRE INTERFACES
+// ===========================================
+
+export interface Genre {
+  id: number;
+  name: string;
 }
 
 // ===========================================
@@ -870,7 +1011,7 @@ import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Movie, MoviePage } from '../interfaces/movie.interface';
+import { Movie, MoviePage, Genre } from '../interfaces/movie.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -900,6 +1041,34 @@ export class MovieService {
     return this.api.get<MoviePage>('/api/movies/discovery/now-playing', params);
   }
 
+  getUpcoming(page = 1, language = 'fr-FR'): Observable<MoviePage> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('language', language);
+    return this.api.get<MoviePage>('/api/movies/discovery/upcoming', params);
+  }
+
+  getPopular(page = 1, language = 'fr-FR'): Observable<MoviePage> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('language', language);
+    return this.api.get<MoviePage>('/api/movies/discovery/popular', params);
+  }
+
+  // Films par genre
+  getByGenre(genreId: number, page = 1, language = 'fr-FR'): Observable<MoviePage> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('language', language);
+    return this.api.get<MoviePage>(`/api/movies/discovery/by-genre/${genreId}`, params);
+  }
+
+  // Liste des genres
+  getGenres(language = 'fr-FR'): Observable<Genre[]> {
+    const params = new HttpParams().set('language', language);
+    return this.api.get<Genre[]>('/api/movies/genres', params);
+  }
+
   // Search
   search(query: string, page = 1, language = 'fr-FR'): Observable<MoviePage> {
     const params = new HttpParams()
@@ -909,7 +1078,7 @@ export class MovieService {
     return this.api.get<MoviePage>('/api/movies/search', params);
   }
 
-  // Details
+  // Details (inclut trailerUrl)
   getMovieDetails(tmdbId: number, language = 'fr-FR'): Observable<Movie> {
     const params = new HttpParams().set('language', language);
     return this.api.get<Movie>(`/api/movies/${tmdbId}`, params);
@@ -1103,8 +1272,12 @@ export class TmdbImageUtil {
 | `/api/movies/discovery/trending` | GET | ❌ | Films tendances |
 | `/api/movies/discovery/top-rated` | GET | ❌ | Films les mieux notés |
 | `/api/movies/discovery/now-playing` | GET | ❌ | Films à l'affiche |
+| `/api/movies/discovery/upcoming` | GET | ❌ | Films à venir (prochaines sorties) |
+| `/api/movies/discovery/popular` | GET | ❌ | Films populaires |
+| `/api/movies/discovery/by-genre/{genreId}` | GET | ❌ | Films par genre |
+| `/api/movies/genres` | GET | ❌ | Liste des genres disponibles |
 | `/api/movies/search` | GET | ❌ | Recherche de films |
-| `/api/movies/{tmdbId}` | GET | ❌ | Détails d'un film |
+| `/api/movies/{tmdbId}` | GET | ❌ | Détails d'un film (avec trailerUrl) |
 | `/api/movies/{tmdbId}/sync` | POST | ❌ | Sync film dans Neo4j |
 | `/api/movies/recommendations/collaborative` | GET | ✅ | Recommandations collaboratives |
 | `/api/movies/recommendations/genre-based` | GET | ✅ | Recommandations par genre |

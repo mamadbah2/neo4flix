@@ -2,6 +2,7 @@ package sn.dev.movie_service.services;
 
 import java.util.List;
 
+import sn.dev.movie_service.web.dto.responses.GenreResponse;
 import sn.dev.movie_service.web.dto.responses.MoviePageResponse;
 import sn.dev.movie_service.web.dto.responses.MovieResponse;
 import sn.dev.movie_service.web.dto.responses.SyncResponse;
@@ -28,6 +29,27 @@ public interface MovieService {
      * Récupère les films actuellement à l'affiche depuis TMDb.
      */
     MoviePageResponse getNowPlayingMovies(String language, Integer page);
+    
+    /**
+     * Récupère les films à venir (prochaines sorties) depuis TMDb.
+     */
+    MoviePageResponse getUpcomingMovies(String language, Integer page);
+    
+    /**
+     * Récupère les films les plus populaires depuis TMDb.
+     */
+    MoviePageResponse getPopularMovies(String language, Integer page);
+    
+    /**
+     * Récupère les films par genre depuis TMDb.
+     * @param genreId l'ID TMDb du genre
+     */
+    MoviePageResponse getMoviesByGenre(Integer genreId, String language, Integer page);
+    
+    /**
+     * Récupère la liste de tous les genres disponibles.
+     */
+    List<GenreResponse> getAllGenres(String language);
     
     /**
      * Recherche de films par requête textuelle sur TMDb.

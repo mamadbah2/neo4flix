@@ -1,0 +1,55 @@
+<!-- Movie Card with Hover Expansion -->
+<div 
+  class="movie-card-container"
+  [class.show-rank]="showRank"
+  (click)="onCardClick()">
+  
+  <!-- Rank Number (for Top 10 style) -->
+  @if (showRank && rank) {
+    <span class="giant-number">{{ rank }}</span>
+  }
+  
+  <div class="movie-card-inner" [class.with-rank]="showRank">
+    <!-- Portrait Poster (default) -->
+    <img 
+      [src]="posterUrl" 
+      [alt]="movie.title"
+      class="img-portrait"
+      loading="lazy" />
+    
+    <!-- Landscape Backdrop (shown on hover) -->
+    <img 
+      [src]="backdropUrl" 
+      [alt]="movie.title"
+      class="img-landscape"
+      loading="lazy" />
+    
+    <!-- Overlay with details (shown on hover) -->
+    <div class="details-overlay">
+      <div class="space-y-2">
+        <h4 class="text-lg font-bold line-clamp-2">{{ movie.title }}</h4>
+        
+        <div class="flex items-center gap-3 text-sm text-gray-300">
+          @if (releaseYear) {
+            <span>{{ releaseYear }}</span>
+          }
+          
+          @if (movie.voteAverage) {
+            <span class="flex items-center gap-1">
+              <i class="fa-solid fa-star text-yellow-500"></i>
+              {{ formattedRating }}
+            </span>
+          }
+        </div>
+        
+        @if (movie.genres && movie.genres.length > 0) {
+          <div class="flex flex-wrap gap-1">
+            @for (genre of movie.genres.slice(0, 2); track genre) {
+              <span class="text-xs bg-white/10 px-2 py-0.5 rounded">{{ genre }}</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

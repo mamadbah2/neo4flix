@@ -37,6 +37,13 @@ Standalone Components: Use the modern standalone: true approach (Angular 21 stan
 
 Core vs Shared: If a service is used everywhere, it goes to core. If a component is a UI building block, it goes to shared.
 
+Each component must have at least: (.html, .ts, .spec.ts)
+├── product-details.component.html
+├── product-details.component.spec.ts
+└── product-details.component.ts
+
+For the tests files (do unit test). Follow 'best practices'
+
 3. TECHNICAL STACK
 
 Framework: Angular 21.0.6+ (Strict use of Signals, New Control Flow @if/@for, SSR & Hydration).

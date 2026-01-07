@@ -1,0 +1,53 @@
+<!-- Movie Row - Horizontal scrollable row of movie cards -->
+@if (!isHidden()) {
+  <section class="movie-row relative" [class.top10-row]="config.showRank">
+    <!-- Row Title -->
+    <h3 class="text-xl md:text-2xl font-bold mb-4 px-2">{{ config.title }}</h3>
+    
+    <!-- Slider Container -->
+    <div class="row-container relative group">
+      <!-- Left Navigation Arrow -->
+      <button 
+        class="nav-arrow nav-arrow-left"
+        (click)="scrollLeft()"
+        [class.hidden]="!canScrollLeft()"
+        aria-label="Précédent">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      
+      <!-- Movies Slider -->
+      <div 
+        #slider
+        class="movies-slider flex gap-4 overflow-x-auto no-scrollbar pb-4 px-2"
+        (scroll)="onScroll()">
+        
+        <!-- Loading Skeletons -->
+        @if (isLoading()) {
+          @for (i of skeletonCount; track i) {
+            <app-skeleton-card 
+              class="flex-shrink-0"
+              [style.width]="config.showRank ? '367px' : '267px'"
+              [style.height]="'401px'" />
+          }
+        } @else {
+          <!-- Movie Cards -->
+          @for (movie of movies(); track movie.tmdbId; let i = $index) {
+            <app-movie-card 
+              [movie]="movie"
+              [showRank]="config.showRank ?? false"
+              [rank]="config.showRank ? i + 1 : undefined" />
+          }
+        }
+      </div>
+      
+      <!-- Right Navigation Arrow -->
+      <button 
+        class="nav-arrow nav-arrow-right"
+        (click)="scrollRight()"
+        [class.hidden]="!canScrollRight()"
+        aria-label="Suivant">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </section>
+}

@@ -2,13 +2,14 @@ import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { SearchBarComponent } from '../search-bar/search-bar.component';
 
 export type NavPage = 'home' | 'series' | 'films' | 'social' | 'watchlist' | 'none';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, SearchBarComponent],
   template: `
     <header 
       id="main-header" 
@@ -58,10 +59,8 @@ export type NavPage = 'home' | 'series' | 'films' | 'social' | 'watchlist' | 'no
       
       <div class="flex items-center space-x-6 text-xl">
         @if (authService.isLoggedIn()) {
-          <!-- Search Button -->
-          <button class="hover:text-gray-400 transition" aria-label="Rechercher">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </button>
+          <!-- Search Bar -->
+          <app-search-bar />
           
           <!-- User Profile Dropdown -->
           <div class="relative group">
