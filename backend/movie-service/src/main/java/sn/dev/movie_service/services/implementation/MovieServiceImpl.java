@@ -497,6 +497,19 @@ public class MovieServiceImpl implements MovieService {
         return movies;
     }
 
+    // ================== SIMILAR MOVIES ==================
+
+    @Override
+    @Transactional(readOnly = true)
+    public MoviePageResponse getSimilarMovies(Long tmdbId, String language, Integer page) {
+        try {
+            TmdbPageResponse<TmdbMovieDto> response = tmdbClient.getSimilarMovies(tmdbId, language, page);
+            return mapToPageResponse(response);
+        } catch (FeignException e) {
+            throw new TmdbApiException("Impossible de récupérer les films similaires pour " + tmdbId, e);
+        }
+    }
+
     // ================== BATCH ==================
 
     @Override

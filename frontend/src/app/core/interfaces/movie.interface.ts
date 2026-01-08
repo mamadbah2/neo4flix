@@ -7,6 +7,14 @@
 // MOVIE INTERFACES
 // ===========================================
 
+export interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profilePath: string | null;
+  order: number;
+}
+
 export interface Movie {
   tmdbId: number;
   title: string;
@@ -23,6 +31,11 @@ export interface Movie {
   tagline?: string | null;
   trailerUrl?: string | null;
   syncedInNeo4j?: boolean;
+  // Cast (top 7 actors from backend)
+  cast?: CastMember[];
+  // Local ratings from Neo4j
+  localAverageRating?: number;
+  localRatingCount?: number;
 }
 
 export interface MoviePage {
@@ -80,6 +93,30 @@ export interface SharedMovie extends MovieRecommendation {
 export interface ShareRequest {
   targetUserId: string;
   tmdbId: number;
+  message?: string; // Optionnel, max 500 caractères
+}
+
+// ===========================================
+// USER INTERFACES
+// ===========================================
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+}
+
+export interface UserProfile {
+  userId: string;
+  username: string;
+  email: string;
+  watchlistCount: number;
+  followersCount: number;
+  followingCount: number;
+}
+
+export interface FollowStatus {
+  following: boolean;
 }
 
 // ===========================================
@@ -103,10 +140,34 @@ export interface WatchlistItem {
 export interface RateRequest {
   tmdbId: number;
   score: number; // 1-10
+  comment?: string; // Optionnel, max 500 caractères
 }
 
 export interface RateResponse {
   score: number;
+}
+
+// ===========================================
+// REVIEW INTERFACES
+// ===========================================
+
+export interface Review {
+  id?: string;
+  author: string;
+  content: string;
+  rating: number | null;
+  createdAt: string;
+  isLocal: boolean;
+  avatarPath: string | null;
+}
+
+export interface ReviewPage {
+  reviews: Review[];
+  page: number;
+  totalPages: number;
+  totalResults: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
 }
 
 // ===========================================

@@ -20,9 +20,13 @@ const STORAGE_KEYS = {
   ACCESS_TOKEN: 'neo4flix_access_token',
   REFRESH_TOKEN: 'neo4flix_refresh_token',
   EXPIRES_AT: 'neo4flix_expires_at',
+  REFRESH_EXPIRES_AT: 'neo4flix_refresh_expires_at', // For 2-week session persistence
   USER: 'neo4flix_user',
   RETURN_URL: 'neo4flix_return_url'
 } as const;
+
+// 2 weeks in milliseconds (Keycloak default SSO session max)
+const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
 @Injectable({
   providedIn: 'root'
@@ -58,16 +62,32 @@ export class AuthService {
 
   /**
    * Initialize auth state from localStorage on app startup
+   * Supports 2-week session persistence via refresh token
    */
   private initializeAuthState(): void {
     if (!this.isBrowser()) return;
 
     const token = this.getAccessToken();
     const expiresAt = this.getExpiresAt();
+    const refreshExpiresAt = this.getRefreshExpiresAt();
 
+    // Check if access token is valid
     if (token && expiresAt && Date.now() < expiresAt) {
       this._isAuthenticated.set(true);
       this._user.set(this.getStoredUser());
+    } 
+    // If access token expired but refresh token is still valid (within 2 weeks)
+    else if (this.getRefreshToken() && refreshExpiresAt && Date.now() < refreshExpiresAt) {
+      // Attempt to refresh the token silently
+      this.refreshToken().subscribe({
+        next: () => {
+          this._isAuthenticated.set(true);
+          this._user.set(this.getStoredUser());
+        },
+        error: () => {
+          this.clearAuthData();
+        }
+      });
     } else {
       this.clearAuthData();
     }
@@ -232,12 +252,17 @@ export class AuthService {
 
   private handleAuthSuccess(response: TokenResponse): void {
     const expiresAt = Date.now() + response.expires_in * 1000;
+    // Set refresh token expiration to 2 weeks from now (or use refresh_expires_in if provided)
+    const refreshExpiresAt = Date.now() + (response.refresh_expires_in 
+      ? response.refresh_expires_in * 1000 
+      : TWO_WEEKS_MS);
     const user = this.decodeToken(response.access_token);
 
     if (this.isBrowser()) {
       localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.access_token);
       localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token);
       localStorage.setItem(STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
+      localStorage.setItem(STORAGE_KEYS.REFRESH_EXPIRES_AT, refreshExpiresAt.toString());
       if (user) {
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       }
@@ -308,7 +333,15 @@ export class AuthService {
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.EXPIRES_AT);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_EXPIRES_AT);
     localStorage.removeItem(STORAGE_KEYS.USER);
+  }
+
+  private getRefreshExpiresAt(): number | null {
+    if (!this.isBrowser()) return null;
+
+    const refreshExpiresAt = localStorage.getItem(STORAGE_KEYS.REFRESH_EXPIRES_AT);
+    return refreshExpiresAt ? parseInt(refreshExpiresAt, 10) : null;
   }
 
   private isBrowser(): boolean {

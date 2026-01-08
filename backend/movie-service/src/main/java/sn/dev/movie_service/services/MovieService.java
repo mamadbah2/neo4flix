@@ -100,6 +100,15 @@ public interface MovieService {
      */
     List<MovieResponse> getGenreBasedRecs(String userId, String language);
 
+    /**
+     * Récupère les films similaires à un film donné.
+     * 
+     * @param tmdbId l'ID TMDb du film
+     * @param language la langue
+     * @param page le numéro de page
+     */
+    MoviePageResponse getSimilarMovies(Long tmdbId, String language, Integer page);
+
     // ================== BATCH ==================
     
     /**

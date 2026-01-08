@@ -40,6 +40,9 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.GET, "/api/movies/search").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/movies/genres").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/movies/{tmdbId}").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/movies/{tmdbId}/similar").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/movies/{tmdbId}/reviews").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/api/movies/batch").permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/movies/{tmdbId}/sync").permitAll()
                         
                         // Endpoints internes

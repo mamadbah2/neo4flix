@@ -50,11 +50,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   
-  // Social page (protected) - placeholder
+  // Social page (protected)
   {
     path: 'social',
-    loadComponent: () => import('./features/home/components/home.component')
-      .then(m => m.HomeComponent),
+    loadComponent: () => import('./features/social/components/social.component')
+      .then(m => m.SocialComponent),
     canActivate: [authGuard]
   },
   

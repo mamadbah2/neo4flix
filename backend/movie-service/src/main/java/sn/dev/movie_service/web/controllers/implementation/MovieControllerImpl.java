@@ -88,6 +88,12 @@ public class MovieControllerImpl implements MovieController {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<MoviePageResponse> getSimilarMovies(Long tmdbId, String language, Integer page) {
+        MoviePageResponse response = movieService.getSimilarMovies(tmdbId, language, page);
+        return ResponseEntity.ok(response);
+    }
+
     // ================== SYNC ENDPOINT ==================
 
     @Override

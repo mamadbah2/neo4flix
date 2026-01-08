@@ -10,6 +10,10 @@ import sn.dev.rating_service.web.dto.responses.RateResponse;
 
 @RequestMapping("/api/rates")
 public interface RateController {
-    @PostMapping("/")
+    /**
+     * Créer ou mettre à jour une note pour un film.
+     * Accepte POST sur /api/rates et /api/rates/
+     */
+    @PostMapping({"", "/"})
     ResponseEntity<RateResponse> createRate(@RequestBody RateRequest rateRequest);
 }

@@ -1,0 +1,302 @@
+<!-- Social Page -->
+<div class="bg-black text-white min-h-screen font-sans antialiased">
+  
+  <!-- Navbar -->
+  <app-navbar activePage="social" />
+  
+  <main class="pt-24 pb-12 px-4 md:px-12 container mx-auto">
+    
+    <!-- Title Section -->
+    <div class="mb-10">
+      <h2 class="text-3xl md:text-4xl font-black text-white flex items-center gap-4">
+        <span class="p-2 bg-[#E50914]/10 rounded-lg text-[#E50914]">
+          <i class="fa-solid fa-users-viewfinder"></i>
+        </span>
+        Le Graphe Humain
+      </h2>
+      <p class="text-gray-400 mt-2 text-lg">Connectez-vous avec vos amis et découvrez leurs coups de cœur.</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- LEFT SIDEBAR: PROFILE & FRIENDS -->
+      <aside class="lg:col-span-3 space-y-8" aria-label="Profil et amis">
+        
+        <!-- User Profile Card -->
+        <div class="glass-card rounded-3xl p-8 flex flex-col items-center text-center relative overflow-hidden">
+          <!-- Subtle red glow in background -->
+          <div class="absolute -top-10 -left-10 w-32 h-32 bg-[#E50914]/10 blur-3xl"></div>
+          
+          @if (isLoadingProfile()) {
+            <!-- Profile Skeleton -->
+            <div class="animate-pulse w-full">
+              <div class="w-24 h-24 rounded-full bg-gray-700 mx-auto mb-6"></div>
+              <div class="h-6 bg-gray-700 rounded w-32 mx-auto mb-2"></div>
+              <div class="h-4 bg-gray-700 rounded w-24 mx-auto mb-6"></div>
+              <div class="grid grid-cols-3 gap-3 w-full mb-8">
+                @for (i of [1, 2, 3]; track i) {
+                  <div class="bg-white/5 rounded-2xl py-4">
+                    <div class="h-5 bg-gray-700 rounded w-8 mx-auto mb-2"></div>
+                    <div class="h-3 bg-gray-700 rounded w-12 mx-auto"></div>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else if (profile(); as p) {
+            <div class="relative z-10 mb-6">
+              <div class="red-gradient-border shadow-xl shadow-[#E50914]/10">
+                <img 
+                  [src]="getAvatarUrl(p.username)" 
+                  [alt]="p.username"
+                  class="w-24 h-24 object-cover rounded-full border-4 border-[#141414]">
+              </div>
+            </div>
+            
+            <h3 class="text-2xl font-bold">{{ p.username }}</h3>
+            <p class="text-[#E50914] font-semibold text-sm mb-6 tracking-wide">&#64;{{ p.username.toLowerCase() }}</p>
+            
+            <div class="grid grid-cols-3 gap-3 w-full mb-8">
+              <div class="bg-white/5 rounded-2xl py-4 transition hover:bg-white/10">
+                <div class="text-xl font-black">{{ p.watchlistCount }}</div>
+                <div class="text-[10px] uppercase text-gray-500 font-bold">Ma Liste</div>
+              </div>
+              <div class="bg-white/5 rounded-2xl py-4 transition hover:bg-white/10">
+                <div class="text-xl font-black">{{ p.followersCount }}</div>
+                <div class="text-[10px] uppercase text-gray-500 font-bold">Abonnés</div>
+              </div>
+              <div class="bg-white/5 rounded-2xl py-4 transition hover:bg-white/10">
+                <div class="text-xl font-black">{{ p.followingCount }}</div>
+                <div class="text-[10px] uppercase text-gray-500 font-bold">Abonnements</div>
+              </div>
+            </div>
+            
+            <button class="w-full py-3 bg-[#E50914] text-white rounded-xl font-bold text-sm transition hover:bg-[#B20710] flex items-center justify-center gap-2 shadow-lg shadow-[#E50914]/20">
+              <i class="fa-solid fa-pen-to-square"></i> Modifier le profil
+            </button>
+          }
+        </div>
+        
+        <!-- Friends List -->
+        <div class="glass-card rounded-3xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h4 class="font-bold text-lg flex items-center gap-2">
+              <i class="fa-solid fa-user-group text-[#E50914] text-sm"></i> Amis
+            </h4>
+            <button class="text-gray-400 hover:text-white transition">
+              <i class="fa-solid fa-circle-plus"></i>
+            </button>
+          </div>
+          
+          @if (isLoadingFriends()) {
+            <!-- Friends Skeleton -->
+            <div class="space-y-5">
+              @for (i of [1, 2, 3]; track i) {
+                <div class="flex items-center gap-3 animate-pulse">
+                  <div class="w-11 h-11 rounded-full bg-gray-700"></div>
+                  <div>
+                    <div class="h-4 bg-gray-700 rounded w-20 mb-1"></div>
+                    <div class="h-3 bg-gray-700 rounded w-16"></div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else if (following().length === 0) {
+            <div class="text-center py-8">
+              <i class="fa-solid fa-user-plus text-3xl text-gray-600 mb-3"></i>
+              <p class="text-sm text-gray-500">Aucun ami pour le moment</p>
+              <p class="text-xs text-gray-600 mt-1">Commencez à suivre d'autres utilisateurs</p>
+            </div>
+          } @else {
+            <div class="space-y-5">
+              @for (friend of following(); track friend.id) {
+                <div class="flex items-center justify-between group cursor-pointer p-2 rounded-xl transition hover:bg-white/5">
+                  <div class="flex items-center gap-3">
+                    <div class="relative">
+                      <img 
+                        [src]="getAvatarUrl(friend.username)" 
+                        [alt]="friend.username"
+                        class="w-11 h-11 rounded-full bg-[#222] border border-white/10">
+                      <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#141414] rounded-full"></span>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold group-hover:text-[#E50914] transition">{{ friend.username }}</p>
+                      <p class="text-[11px] text-gray-500">En ligne</p>
+                    </div>
+                  </div>
+                  <i class="fa-solid fa-comment-dots text-gray-600 group-hover:text-white transition"></i>
+                </div>
+              }
+            </div>
+          }
+          
+          @if (following().length > 0) {
+            <button class="w-full mt-6 text-xs text-gray-500 hover:text-[#E50914] transition font-bold uppercase tracking-widest">
+              Voir tous les amis
+            </button>
+          }
+        </div>
+      </aside>
+      
+      <!-- CENTER: SHARED MOVIES -->
+      <section class="lg:col-span-6 space-y-8">
+        <div class="glass-card rounded-3xl overflow-hidden min-h-[500px] flex flex-col p-6 shadow-2xl">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-2xl font-bold">Partagés avec moi</h3>
+              <p class="text-gray-400 text-sm">Ce que vos amis vous recommandent</p>
+            </div>
+            <div class="flex bg-white/5 p-1 rounded-full border border-white/5">
+              <button class="px-5 py-1.5 bg-[#E50914] text-white rounded-full text-xs font-bold">Tous</button>
+              <button class="px-5 py-1.5 text-gray-400 hover:text-white rounded-full text-xs font-bold transition">Films</button>
+            </div>
+          </div>
+          
+          @if (isLoadingShared()) {
+            <!-- Shared Movies Skeleton -->
+            <div class="flex-1 animate-pulse">
+              <div class="aspect-video bg-gray-700 rounded-2xl mb-8"></div>
+              <div class="grid grid-cols-3 gap-4">
+                @for (i of [1, 2, 3]; track i) {
+                  <div>
+                    <div class="aspect-video bg-gray-700 rounded-xl mb-2"></div>
+                    <div class="h-3 bg-gray-700 rounded w-3/4 mb-1"></div>
+                    <div class="h-2 bg-gray-700 rounded w-1/2"></div>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else if (sharedMovies().length === 0) {
+            <!-- No Shared Movies -->
+            <div class="flex-1 flex flex-col items-center justify-center text-center py-16">
+              <i class="fa-solid fa-share-nodes text-5xl text-gray-600 mb-4"></i>
+              <h4 class="text-xl font-bold mb-2">Aucune recommandation</h4>
+              <p class="text-gray-500 max-w-sm">Vos amis n'ont pas encore partagé de films avec vous. Commencez à suivre des cinéphiles !</p>
+            </div>
+          } @else {
+            <!-- Featured Shared Movie -->
+            @if (featuredMovie(); as featured) {
+              <a 
+                [routerLink]="['/movie', featured.tmdbId]"
+                class="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer mb-8 block">
+                <img 
+                  [src]="getBackdropUrl(featured.backdropPath || null)" 
+                  [alt]="featured.title"
+                  class="w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-70">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                
+                <!-- Sender Badge -->
+                <div class="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
+                  <img 
+                    [src]="getAvatarUrl(featured.sharedBy.username)" 
+                    [alt]="featured.sharedBy.username"
+                    class="w-6 h-6 rounded-full">
+                  <span class="text-xs font-medium text-white">
+                    Recommandé par <span class="text-[#E50914] font-bold">{{ featured.sharedBy.username }}</span>
+                  </span>
+                </div>
+                
+                <!-- Content Overlay -->
+                <div class="absolute bottom-0 left-0 p-8 w-full">
+                  <h4 class="text-4xl font-black mb-3 uppercase">{{ featured.title }}</h4>
+                  <div class="flex items-center gap-4">
+                    <button class="bg-white text-black px-8 py-3 rounded-full font-bold text-sm flex items-center gap-2 hover:bg-gray-200 transition">
+                      <i class="fa-solid fa-play"></i> Regarder
+                    </button>
+                    <button class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-full font-bold text-sm hover:bg-white/20 transition">
+                      Ajouter
+                    </button>
+                  </div>
+                </div>
+              </a>
+            }
+            
+            <!-- Other Shared Movies Grid -->
+            @if (sharedMovies().length > 1) {
+              <div>
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Récents</h4>
+                <div class="grid grid-cols-3 gap-4">
+                  @for (movie of sharedMovies().slice(1, 4); track movie.tmdbId) {
+                    <a [routerLink]="['/movie', movie.tmdbId]" class="group cursor-pointer">
+                      <div class="relative aspect-video rounded-xl overflow-hidden mb-2">
+                        <img 
+                          [src]="getBackdropUrl(movie.backdropPath || null)" 
+                          [alt]="movie.title"
+                          class="w-full h-full object-cover group-hover:scale-105 transition">
+                        <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition"></div>
+                        <div class="absolute top-2 left-2 ring-2 ring-[#141414] rounded-full overflow-hidden w-7 h-7">
+                          <img 
+                            [src]="getAvatarUrl(movie.sharedBy.username)" 
+                            [alt]="movie.sharedBy.username"
+                            class="w-full h-full object-cover">
+                        </div>
+                      </div>
+                      <p class="text-xs font-bold truncate uppercase">{{ movie.title }}</p>
+                      <p class="text-[10px] text-gray-500 mt-1">{{ formatDate(movie.sharedAt) }}</p>
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </section>
+      
+      <!-- RIGHT SIDEBAR: ACTIVITY FEED -->
+      <aside class="lg:col-span-3" aria-label="Flux d'activité">
+        <div class="glass-card rounded-3xl p-6 h-full shadow-lg">
+          <div class="flex items-center justify-between mb-8">
+            <h3 class="font-bold text-lg flex items-center gap-2">
+              <i class="fa-solid fa-bolt-lightning text-[#E50914]"></i> Flux d'Activité
+            </h3>
+            <a href="#" class="text-[10px] font-bold text-gray-500 hover:text-white uppercase tracking-tighter">Tout voir</a>
+          </div>
+          
+          <!-- Activity Timeline -->
+          <div class="space-y-8 relative before:absolute before:inset-y-0 before:left-[15px] before:w-0.5 before:bg-white/5">
+            
+            <!-- Activity Items (Static for now - would come from API) -->
+            @if (following().length > 0) {
+              @for (friend of following().slice(0, 3); track friend.id) {
+                <div class="relative z-10 flex gap-4">
+                  <div class="w-8 h-8 rounded-full bg-[#141414] border-2 border-[#E50914] overflow-hidden flex-shrink-0 shadow-lg shadow-[#E50914]/10">
+                    <img [src]="getAvatarUrl(friend.username)" [alt]="friend.username">
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-300 leading-snug">
+                      <span class="font-bold text-white">{{ friend.username }}</span> a rejoint votre réseau
+                    </p>
+                    <p class="text-[10px] text-gray-500 mt-1">Récemment</p>
+                  </div>
+                </div>
+              }
+            } @else {
+              <div class="text-center py-8">
+                <i class="fa-solid fa-clock-rotate-left text-3xl text-gray-600 mb-3"></i>
+                <p class="text-sm text-gray-500">Aucune activité récente</p>
+              </div>
+            }
+            
+            <!-- Community Challenge Card -->
+            <div class="mt-8 p-5 bg-gradient-to-br from-[#E50914]/20 to-transparent rounded-2xl border border-[#E50914]/20 shadow-xl">
+              <h5 class="text-white font-black text-sm mb-1 uppercase tracking-tighter italic">Challenge du mois</h5>
+              <p class="text-[11px] text-gray-400 mb-4">Regardez 5 films recommandés par vos amis</p>
+              <div class="flex items-center justify-between">
+                <div class="flex -space-x-2">
+                  @for (i of [1, 2, 3, 4]; track i) {
+                    <img 
+                      [src]="getAvatarUrl('user' + i)" 
+                      class="w-8 h-8 rounded-full border-2 border-[#141414]" 
+                      alt="Participant">
+                  }
+                </div>
+                <button class="text-xs text-[#E50914] font-black hover:text-white transition uppercase tracking-widest">
+                  Rejoindre
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>

@@ -132,6 +132,17 @@ public interface MovieController {
         @RequestParam(defaultValue = "5") Integer size
     );
 
+    /**
+     * Films similaires à un film donné.
+     * Source: TMDb - Pas de stockage Neo4j.
+     */
+    @GetMapping("/{tmdbId}/similar")
+    ResponseEntity<MoviePageResponse> getSimilarMovies(
+        @PathVariable Long tmdbId,
+        @RequestParam(defaultValue = "fr-FR") String language,
+        @RequestParam(defaultValue = "1") Integer page
+    );
+
     // ================== SYNC ENDPOINT (Internal) ==================
 
     /**

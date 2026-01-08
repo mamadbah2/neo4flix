@@ -135,4 +135,14 @@ public interface TmdbClient {
         @RequestParam(defaultValue = "fr-FR") String language,
         @RequestParam(defaultValue = "1") Integer page
     );
+
+    /**
+     * Récupère les films similaires à un film donné.
+     */
+    @GetMapping("/movie/{movieId}/similar")
+    TmdbPageResponse<TmdbMovieDto> getSimilarMovies(
+        @PathVariable("movieId") Long movieId,
+        @RequestParam(defaultValue = "fr-FR") String language,
+        @RequestParam(defaultValue = "1") Integer page
+    );
 }

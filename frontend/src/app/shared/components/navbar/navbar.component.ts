@@ -1,5 +1,5 @@
-import { Component, Input, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, inject, signal, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
@@ -13,10 +13,14 @@ export type NavPage = 'home' | 'series' | 'films' | 'social' | 'watchlist' | 'no
   template: `
     <header 
       id="main-header" 
-      class="fixed top-0 w-full z-[100] px-6 md:px-16 py-5 flex items-center justify-between transition-all duration-400"
-      [class.bg-transparent]="!scrolled"
-      [class.bg-black/95]="scrolled"
-      [class.backdrop-blur-md]="scrolled">
+      class="fixed top-0 w-full z-[100] px-6 md:px-16 flex items-center justify-between transition-all duration-400"
+      [class.bg-transparent]="!scrolled()"
+      [class.bg-black/95]="scrolled()"
+      [class.backdrop-blur-md]="scrolled()"
+      [class.py-5]="!scrolled()"
+      [class.py-3]="scrolled()"
+      [class.-translate-y-full]="hidden()"
+      [class.translate-y-0]="!hidden()">
       
       <div class="flex items-center space-x-10">
         <!-- Logo -->
@@ -109,19 +113,46 @@ export type NavPage = 'home' | 'series' | 'films' | 'social' | 'watchlist' | 'no
     }
   `]
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit, OnDestroy {
   @Input() activePage: NavPage = 'none';
   
+  private readonly platformId = inject(PLATFORM_ID);
   readonly authService = inject(AuthService);
   
-  scrolled = false;
+  // Signals for reactive state
+  readonly scrolled = signal(false);
+  readonly hidden = signal(false);
+  
+  private lastScrollTop = 0;
+  private scrollHandler: (() => void) | null = null;
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', () => {
-        this.scrolled = window.scrollY > 50;
-      });
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.scrollHandler = () => this.onScroll();
+      window.addEventListener('scroll', this.scrollHandler, { passive: true });
     }
+  }
+
+  ngOnDestroy(): void {
+    if (this.scrollHandler && isPlatformBrowser(this.platformId)) {
+      window.removeEventListener('scroll', this.scrollHandler);
+    }
+  }
+
+  private onScroll(): void {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    
+    // Background change on scroll
+    this.scrolled.set(scrollTop > 50);
+    
+    // Hide on scroll down, show on scroll up
+    if (scrollTop > this.lastScrollTop && scrollTop > 200) {
+      this.hidden.set(true);
+    } else {
+      this.hidden.set(false);
+    }
+    
+    this.lastScrollTop = scrollTop;
   }
 
   logout(): void {

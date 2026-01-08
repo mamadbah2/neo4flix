@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Movie, MoviePage, Genre } from '../interfaces/movie.interface';
+import { Movie, MoviePage, Genre, ReviewPage } from '../interfaces/movie.interface';
 
 /**
  * MovieService - Handles all movie-related API calls
@@ -128,6 +128,27 @@ export class MovieService {
 
     return this.http.get<MoviePage>(`${this.apiUrl}/${tmdbId}/similar`, { params })
       .pipe(catchError(this.handleError<MoviePage>('getSimilarMovies')));
+  }
+
+  /**
+   * Get movie reviews (paginated)
+   * Returns local reviews first, then TMDb reviews
+   */
+  getMovieReviews(tmdbId: number, page: number = 1, size: number = 5): Observable<ReviewPage> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('language', this.defaultLanguage);
+
+    return this.http.get<ReviewPage>(`${this.apiUrl}/${tmdbId}/reviews`, { params })
+      .pipe(catchError(this.handleError<ReviewPage>('getMovieReviews', {
+        reviews: [],
+        page: 1,
+        totalPages: 0,
+        totalResults: 0,
+        hasNext: false,
+        hasPrevious: false
+      })));
   }
 
   // ===========================================
