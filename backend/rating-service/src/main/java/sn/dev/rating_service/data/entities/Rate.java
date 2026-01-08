@@ -18,6 +18,16 @@ public class Rate {
     private String id;
     private int score;
     
+    /**
+     * Commentaire optionnel sur le film.
+     */
+    private String comment;
+    
+    /**
+     * Date de création de l'avis.
+     */
+    private String createdAt;
+    
     @TargetNode
     private Movie movie;
 }

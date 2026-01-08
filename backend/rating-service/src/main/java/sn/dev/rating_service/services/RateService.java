@@ -15,8 +15,9 @@ public interface RateService {
      * @param userId l'ID Keycloak de l'utilisateur
      * @param tmdbId l'ID TMDb du film
      * @param score la note (1-5)
+     * @param comment commentaire optionnel
      */
-    Rate createRate(String userId, Long tmdbId, int score);
+    Rate createRate(String userId, Long tmdbId, int score, String comment);
     
     /**
      * Récupère la notation d'un utilisateur pour un film.

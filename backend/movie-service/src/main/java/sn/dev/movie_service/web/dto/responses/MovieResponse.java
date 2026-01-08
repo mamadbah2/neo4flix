@@ -37,4 +37,13 @@ public class MovieResponse {
     
     // Indique si le film est synchronisé dans Neo4j (pour les relations)
     private Boolean syncedInNeo4j;
+    
+    // Casting (top 7 acteurs)
+    private List<CastMemberResponse> cast;
+    
+    // Note moyenne locale (Neo4j)
+    private Double localAverageRating;
+    
+    // Nombre de notes locales
+    private Integer localRatingCount;
 }

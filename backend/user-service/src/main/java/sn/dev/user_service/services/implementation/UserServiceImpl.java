@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import sn.dev.user_service.data.entities.User;
 import sn.dev.user_service.data.repositories.UserRepository;
 import sn.dev.user_service.services.UserService;
+import sn.dev.user_service.web.dto.responses.UserProfileResponse;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -49,4 +50,26 @@ public class UserServiceImpl implements UserService {
                 });
     }
 
+    @Override
+    public UserProfileResponse getUserProfile(String userId) {
+        User user = userRepository.findByKeycloakId(userId).orElse(null);
+        if (user == null) {
+            return null;
+        }
+        
+        Integer followersCount = userRepository.countFollowers(userId);
+        Integer followingCount = userRepository.countFollowing(userId);
+        Integer watchlistCount = userRepository.countWatchlist(userId);
+        Integer ratingsCount = userRepository.countRatings(userId);
+        
+        return UserProfileResponse.builder()
+                .id(user.getKeycloakId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .followersCount(followersCount != null ? followersCount : 0)
+                .followingCount(followingCount != null ? followingCount : 0)
+                .watchlistCount(watchlistCount != null ? watchlistCount : 0)
+                .ratingsCount(ratingsCount != null ? ratingsCount : 0)
+                .build();
+    }
 }

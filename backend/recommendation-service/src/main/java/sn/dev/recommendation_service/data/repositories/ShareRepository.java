@@ -17,18 +17,22 @@ public interface ShareRepository extends Neo4jRepository<Movie, Long> {
     /**
      * Crée une relation de partage : l'utilisateur recommande un film à un ami qu'il suit.
      * Vérifie d'abord que la relation FOLLOWS existe.
+     * Inclut un message optionnel de recommandation.
      */
     @Query("""
             MATCH (me:User {keycloakId: $userId})-[:FOLLOWS]->(friend:User {keycloakId: $targetUserId})
             MATCH (m:Movie {tmdbId: $tmdbId})
             MERGE (me)-[s:SHARED_WITH {at: datetime()}]->(sr:SharedRecommendation {tmdbId: $tmdbId, fromUserId: $userId, toUserId: $targetUserId})
+            ON CREATE SET sr.message = $message, sr.createdAt = datetime()
+            ON MATCH SET sr.message = COALESCE($message, sr.message)
             MERGE (sr)-[:RECOMMENDS]->(m)
             MERGE (sr)-[:FOR]->(friend)
             RETURN COUNT(sr) > 0
             """)
     boolean shareMovieWithFriend(@Param("userId") String userId, 
                                   @Param("targetUserId") String targetUserId, 
-                                  @Param("tmdbId") Long tmdbId);
+                                  @Param("tmdbId") Long tmdbId,
+                                  @Param("message") String message);
 
     /**
      * Vérifie si l'utilisateur suit bien la cible.

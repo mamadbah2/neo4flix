@@ -7,13 +7,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import sn.dev.movie_service.web.dto.responses.GenreResponse;
 import sn.dev.movie_service.web.dto.responses.MoviePageResponse;
 import sn.dev.movie_service.web.dto.responses.MovieResponse;
+import sn.dev.movie_service.web.dto.responses.ReviewPageResponse;
 import sn.dev.movie_service.web.dto.responses.SyncResponse;
+import sn.dev.movie_service.web.dto.requests.BatchMovieRequest;
 
 /**
  * Contrôleur REST pour les films.
@@ -117,6 +120,18 @@ public interface MovieController {
         @RequestParam(defaultValue = "fr-FR") String language
     );
 
+    /**
+     * Avis sur un film avec pagination.
+     * Combine les avis locaux (Neo4j) prioritaires et les avis TMDb.
+     */
+    @GetMapping("/{tmdbId}/reviews")
+    ResponseEntity<ReviewPageResponse> getMovieReviews(
+        @PathVariable Long tmdbId,
+        @RequestParam(defaultValue = "fr-FR") String language,
+        @RequestParam(defaultValue = "1") Integer page,
+        @RequestParam(defaultValue = "5") Integer size
+    );
+
     // ================== SYNC ENDPOINT (Internal) ==================
 
     /**
@@ -144,5 +159,18 @@ public interface MovieController {
     ResponseEntity<List<MovieResponse>> getGenreBasedRecs(
         @AuthenticationPrincipal Object principal,
         @RequestParam(defaultValue = "fr-FR") String language
+    );
+
+    // ================== BATCH ENDPOINT ==================
+
+    /**
+     * Récupère les détails de plusieurs films en une seule requête.
+     * Version légère pour enrichir les watchlists.
+     */
+    @PostMapping("/batch")
+    ResponseEntity<List<MovieResponse>> getBatchMovies(
+        @RequestBody BatchMovieRequest request,
+        @RequestParam(defaultValue = "fr-FR") String language,
+        @RequestParam(defaultValue = "false") Boolean detailed
     );
 }

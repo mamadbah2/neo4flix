@@ -20,7 +20,7 @@ public class ShareServiceImpl implements ShareService {
     private final ShareRepository shareRepository;
 
     @Override
-    public void shareMovie(String userId, String targetUserId, Long tmdbId) {
+    public void shareMovie(String userId, String targetUserId, Long tmdbId, String message) {
         // Vérifier que l'utilisateur ne partage pas avec lui-même
         if (userId.equals(targetUserId)) {
             throw new IllegalArgumentException("Vous ne pouvez pas partager un film avec vous-même");
@@ -36,8 +36,8 @@ public class ShareServiceImpl implements ShareService {
             throw new NotFoundException("Le film avec TMDb ID " + tmdbId + " n'existe pas. Synchronisez-le d'abord.");
         }
 
-        // Créer la relation de partage
-        shareRepository.shareMovieWithFriend(userId, targetUserId, tmdbId);
+        // Créer la relation de partage avec message optionnel
+        shareRepository.shareMovieWithFriend(userId, targetUserId, tmdbId, message);
     }
 
     @Override

@@ -17,7 +17,7 @@ import sn.dev.recommendation_service.web.dto.responses.MovieResponse;
 @RequestMapping("/api/recommendations")
 public interface RecommendationController {
     
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     ResponseEntity<List<MovieResponse>> getMyRecs(@AuthenticationPrincipal Jwt jwt);
     
     @GetMapping("/shared")

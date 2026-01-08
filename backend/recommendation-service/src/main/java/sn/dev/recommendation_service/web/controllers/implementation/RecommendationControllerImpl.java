@@ -40,7 +40,7 @@ public class RecommendationControllerImpl implements RecommendationController {
     @Override
     public ResponseEntity<Void> shareMovie(Jwt jwt, ShareRequest request) {
         String userId = jwt.getClaimAsString("sub");
-        shareService.shareMovie(userId, request.getTargetUserId(), request.getTmdbId());
+        shareService.shareMovie(userId, request.getTargetUserId(), request.getTmdbId(), request.getMessage());
         return ResponseEntity.ok().build();
     }
 }

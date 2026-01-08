@@ -14,7 +14,9 @@ import sn.dev.user_service.data.entities.Movie;
  */
 public interface WatchlistRepository extends Neo4jRepository<Movie, Long> {
 
-    @Query("MATCH (u:User {keycloakId: $userId})-[:WATCHLIST]->(m:Movie) RETURN m")
+    @Query("MATCH (u:User {keycloakId: $userId})-[:WATCHLIST]->(m:Movie) " +
+           "WHERE m.tmdbId IS NOT NULL " +
+           "RETURN m")
     List<Movie> findWatchlistByUserId(@Param("userId") String userId);
 
     @Query("MERGE (u:User {keycloakId: $userId}) " +

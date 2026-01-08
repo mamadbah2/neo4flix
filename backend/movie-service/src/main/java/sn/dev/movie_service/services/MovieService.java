@@ -5,6 +5,7 @@ import java.util.List;
 import sn.dev.movie_service.web.dto.responses.GenreResponse;
 import sn.dev.movie_service.web.dto.responses.MoviePageResponse;
 import sn.dev.movie_service.web.dto.responses.MovieResponse;
+import sn.dev.movie_service.web.dto.responses.ReviewPageResponse;
 import sn.dev.movie_service.web.dto.responses.SyncResponse;
 
 /**
@@ -63,6 +64,17 @@ public interface MovieService {
      * Combine les données TMDb (détails complets) avec l'état Neo4j (relations).
      */
     MovieResponse getMovieDetails(Long tmdbId, String language);
+    
+    /**
+     * Récupère les avis sur un film avec pagination.
+     * Combine les avis locaux (Neo4j) prioritaires et les avis TMDb.
+     * 
+     * @param tmdbId l'ID TMDb du film
+     * @param language la langue
+     * @param page le numéro de page
+     * @param size le nombre d'avis par page
+     */
+    ReviewPageResponse getMovieReviews(Long tmdbId, String language, Integer page, Integer size);
 
     // ================== SYNCHRONISATION LAZY ==================
     
@@ -87,4 +99,15 @@ public interface MovieService {
      * Récupère les IDs TMDb des films recommandés par genres.
      */
     List<MovieResponse> getGenreBasedRecs(String userId, String language);
+
+    // ================== BATCH ==================
+    
+    /**
+     * Récupère les détails de plusieurs films en une seule requête.
+     * 
+     * @param tmdbIds la liste des IDs TMDb
+     * @param language la langue
+     * @param detailed si true, inclut le casting et les notes locales
+     */
+    List<MovieResponse> getBatchMovies(List<Long> tmdbIds, String language, Boolean detailed);
 }

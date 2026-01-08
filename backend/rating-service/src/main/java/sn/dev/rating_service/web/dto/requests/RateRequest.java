@@ -11,4 +11,9 @@ import lombok.Setter;
 public class RateRequest {
     private Long tmdbId;
     private int score;
+    
+    /**
+     * Commentaire optionnel sur le film.
+     */
+    private String comment;
 }

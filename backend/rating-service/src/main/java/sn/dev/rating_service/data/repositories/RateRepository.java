@@ -14,12 +14,14 @@ public interface RateRepository extends Neo4jRepository<Rate, String> {
     
     @Query("MATCH (u:User {keycloakId: $userId}) MATCH (m:Movie {tmdbId: $tmdbId}) " +
         "MERGE (u)-[r:RATED]->(m) " +
-        "SET r.score = $score " +
+        "SET r.score = $score, r.comment = $comment, r.createdAt = $createdAt " +
         "RETURN r")
     void createRate(
         @Param("userId") String userId, 
         @Param("tmdbId") Long tmdbId, 
-        @Param("score") int score
+        @Param("score") int score,
+        @Param("comment") String comment,
+        @Param("createdAt") String createdAt
     );
     
     @Query("MATCH (u:User {keycloakId: $userId})-[r:RATED]->(m:Movie {tmdbId: $tmdbId}) RETURN r.score")

@@ -400,6 +400,128 @@ GET http://localhost:5050/api/movies/27205?language=fr-FR
 }
 ```
 
+### 9. Avis/Reviews d'un Film (Pagination)
+
+**Endpoint:** `GET /api/movies/{tmdbId}/reviews`
+
+| Paramètre | Type | Défaut | Description |
+|-----------|------|--------|-------------|
+| `tmdbId` | number (path) | - | ID TMDb du film |
+| `page` | number | 1 | Numéro de page |
+| `size` | number | 5 | Nombre d'avis par page (max 20) |
+| `language` | string | "fr-FR" | Langue des avis TMDb |
+
+**Auth:** ❌ Non requise
+
+**Description:** Retourne les avis sur un film. Les avis locaux (de la communauté Neo4j) sont affichés en priorité, suivis des avis TMDb. Maximum 20 avis au total.
+
+**Exemple:**
+```http
+GET http://localhost:5050/api/movies/27205/reviews?page=1&size=5&language=fr-FR
+```
+
+**Response (200 OK):**
+```json
+{
+  "reviews": [
+    {
+      "author": "john_doe",
+      "content": "Un chef-d'œuvre absolu ! Nolan à son meilleur.",
+      "createdAt": "2026-01-05T15:30:00",
+      "rating": 9.0,
+      "source": "local",
+      "avatarPath": null
+    },
+    {
+      "author": "CinémaPassion",
+      "content": "Inception est un voyage extraordinaire dans le monde des rêves...",
+      "createdAt": "2023-07-15T10:00:00",
+      "rating": 8.0,
+      "source": "tmdb",
+      "avatarPath": "/3cndJ2Eq0TmQp"
+    }
+  ],
+  "currentPage": 1,
+  "pageSize": 5,
+  "totalReviews": 15,
+  "totalPages": 3,
+  "hasNext": true,
+  "hasPrevious": false
+}
+```
+
+### 10. Récupérer Plusieurs Films (Batch)
+
+**Endpoint:** `POST /api/movies/batch`
+
+**Auth:** ❌ Non requise
+
+**Description:** Récupère les détails de plusieurs films en une seule requête. Utile pour enrichir une liste de films (watchlist, recommandations) avec les données complètes TMDb.
+
+**Request Body:**
+```json
+{
+  "tmdbIds": [27205, 155, 603, 550],
+  "language": "fr-FR"
+}
+```
+
+| Champ | Type | Requis | Description |
+|-------|------|--------|-------------|
+| `tmdbIds` | number[] | ✅ Oui | Liste des IDs TMDb (max 50) |
+| `language` | string | Non | Langue (défaut: "fr-FR") |
+
+**Exemple:**
+```http
+POST http://localhost:5050/api/movies/batch
+Content-Type: application/json
+
+{
+  "tmdbIds": [27205, 155],
+  "language": "fr-FR"
+}
+```
+
+**Response (200 OK):**
+```json
+[
+  {
+    "tmdbId": 27205,
+    "title": "Inception",
+    "originalTitle": "Inception",
+    "overview": "Dom Cobb est un voleur expérimenté...",
+    "posterPath": "/qmDpIHrmpJINaRKAfWQfftjCdyi.jpg",
+    "backdropPath": "/s3TBrRGB1iav7gFOCNx3H31MoES.jpg",
+    "releaseDate": "2010-07-16",
+    "voteAverage": 8.369,
+    "voteCount": 35234,
+    "popularity": 142.567,
+    "genres": ["Action", "Science-Fiction", "Aventure"],
+    "runtime": 148,
+    "cast": [
+      {
+        "id": 6193,
+        "name": "Leonardo DiCaprio",
+        "character": "Dom Cobb",
+        "profilePath": "/wo2hJpn04vbtmh0B9utCFdsQhxM.jpg",
+        "order": 0
+      }
+    ],
+    "localAverageRating": 8.5,
+    "localRatingCount": 42
+  },
+  {
+    "tmdbId": 155,
+    "title": "The Dark Knight",
+    "overview": "Batman entreprend de démanteler...",
+    "posterPath": "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+    "cast": [...],
+    "localAverageRating": 9.1,
+    "localRatingCount": 156
+  }
+]
+```
+
 ### 6. Synchroniser un Film (pour Watchlist/Rating)
 
 **Endpoint:** `POST /api/movies/{tmdbId}/sync`
@@ -671,6 +793,50 @@ Authorization: Bearer <access_token>
 }
 ```
 
+### 6. Profil Utilisateur avec Statistiques
+
+**Endpoint:** `GET /api/users/profile`
+
+**Auth:** ✅ Requise (Bearer Token)
+
+**Description:** Retourne le profil de l'utilisateur connecté avec ses statistiques sociales.
+
+**Response (200 OK):**
+```json
+{
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "username": "mamadbah",
+  "ratingsCount": 42,
+  "watchlistCount": 15,
+  "followersCount": 128,
+  "followingCount": 45
+}
+```
+
+### 7. Profil d'un Autre Utilisateur
+
+**Endpoint:** `GET /api/users/profile/{userId}`
+
+| Paramètre | Type | Description |
+|-----------|------|-------------|
+| `userId` | string (path) | ID Keycloak de l'utilisateur |
+
+**Auth:** ✅ Requise (Bearer Token)
+
+**Description:** Retourne le profil public d'un utilisateur avec ses statistiques.
+
+**Response (200 OK):**
+```json
+{
+  "userId": "other-user-id",
+  "username": "john_doe",
+  "ratingsCount": 87,
+  "watchlistCount": 23,
+  "followersCount": 256,
+  "followingCount": 78
+}
+```
+
 ---
 
 ## Rating Service - API Notes
@@ -685,7 +851,8 @@ Authorization: Bearer <access_token>
 ```json
 {
   "tmdbId": 27205,
-  "score": 8
+  "score": 8,
+  "comment": "Un chef-d'œuvre de Christopher Nolan !"
 }
 ```
 
@@ -693,6 +860,7 @@ Authorization: Bearer <access_token>
 |-------|------|-------------|-------------|
 | `tmdbId` | number | Requis | ID TMDb du film |
 | `score` | number | 1-10 | Note du film |
+| `comment` | string | Optionnel (max 500 caractères) | Commentaire/avis sur le film |
 
 **Response (200 OK):**
 ```json
@@ -701,7 +869,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-> ⚠️ **Note:** Le backend synchronise automatiquement le film dans Neo4j si nécessaire avant d'enregistrer la note.
+> ⚠️ **Note:** Le backend synchronise automatiquement le film dans Neo4j si nécessaire avant d'enregistrer la note. Le commentaire sera visible dans les avis locaux du film.
 
 ---
 
@@ -762,7 +930,8 @@ Authorization: Bearer <access_token>
 ```json
 {
   "targetUserId": "friend-keycloak-id",
-  "tmdbId": 27205
+  "tmdbId": 27205,
+  "message": "Tu dois absolument voir ce film, il est incroyable !"
 }
 ```
 
@@ -770,15 +939,11 @@ Authorization: Bearer <access_token>
 |-------|------|--------|-------------|
 | `targetUserId` | string | ✅ Oui | ID Keycloak du destinataire |
 | `tmdbId` | number | ✅ Oui | ID TMDb du film à partager |
+| `message` | string | Non (max 500 caractères) | Message personnalisé de recommandation |
 
-**Response (201 Created):**
-```json
-{
-  "message": "Movie shared successfully",
-  "tmdbId": 27205,
-  "sharedWith": "friend-keycloak-id"
-}
-```
+**Response (200 OK):** *(Pas de body)*
+
+> ⚠️ **Note:** Vous ne pouvez partager qu'avec des utilisateurs que vous suivez. Le message sera visible par le destinataire dans ses recommandations partagées.
 
 ---
 
@@ -807,6 +972,17 @@ export interface Movie {
   tagline?: string | null;
   trailerUrl?: string | null;  // URL YouTube de la bande-annonce
   syncedInNeo4j?: boolean;
+  cast?: CastMember[];  // 7 acteurs principaux
+  localAverageRating?: number | null;  // Note moyenne de la communauté
+  localRatingCount?: number;  // Nombre de notes locales
+}
+
+export interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profilePath: string | null;
+  order: number;
 }
 
 export interface MoviePage {
@@ -830,6 +1006,34 @@ export interface SyncResponse {
 }
 
 // ===========================================
+// REVIEW INTERFACES
+// ===========================================
+
+export interface Review {
+  author: string;
+  content: string;
+  createdAt: string;
+  rating: number | null;
+  source: 'local' | 'tmdb';
+  avatarPath: string | null;
+}
+
+export interface ReviewPage {
+  reviews: Review[];
+  currentPage: number;
+  pageSize: number;
+  totalReviews: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface BatchMovieRequest {
+  tmdbIds: number[];
+  language?: string;
+}
+
+// ===========================================
 // GENRE INTERFACES
 // ===========================================
 
@@ -848,6 +1052,15 @@ export interface User {
   email: string;
 }
 
+export interface UserProfile {
+  userId: string;
+  username: string;
+  ratingsCount: number;
+  watchlistCount: number;
+  followersCount: number;
+  followingCount: number;
+}
+
 export interface FollowStatus {
   following: boolean;
 }
@@ -859,6 +1072,7 @@ export interface FollowStatus {
 export interface RateRequest {
   tmdbId: number;
   score: number;  // 1-10
+  comment?: string;  // Optionnel, max 500 caractères
 }
 
 export interface RateResponse {
@@ -889,6 +1103,7 @@ export interface SharedMovie extends MovieRecommendation {
 export interface ShareRequest {
   targetUserId: string;
   tmdbId: number;
+  message?: string;  // Optionnel, max 500 caractères
 }
 
 // ===========================================
@@ -1277,12 +1492,16 @@ export class TmdbImageUtil {
 | `/api/movies/discovery/by-genre/{genreId}` | GET | ❌ | Films par genre |
 | `/api/movies/genres` | GET | ❌ | Liste des genres disponibles |
 | `/api/movies/search` | GET | ❌ | Recherche de films |
-| `/api/movies/{tmdbId}` | GET | ❌ | Détails d'un film (avec trailerUrl) |
+| `/api/movies/{tmdbId}` | GET | ❌ | Détails d'un film (avec trailerUrl, cast) |
+| `/api/movies/{tmdbId}/reviews` | GET | ❌ | Avis/reviews d'un film (paginé) |
 | `/api/movies/{tmdbId}/sync` | POST | ❌ | Sync film dans Neo4j |
+| `/api/movies/batch` | POST | ❌ | Récupérer plusieurs films |
 | `/api/movies/recommendations/collaborative` | GET | ✅ | Recommandations collaboratives |
 | `/api/movies/recommendations/genre-based` | GET | ✅ | Recommandations par genre |
 | `/api/users/me` | GET | ✅ | Utilisateur connecté |
 | `/api/users/{id}` | GET | ✅ | Info utilisateur |
+| `/api/users/profile` | GET | ✅ | Mon profil avec statistiques |
+| `/api/users/profile/{userId}` | GET | ✅ | Profil utilisateur avec stats |
 | `/api/users/watchlist` | GET | ✅ | Ma watchlist |
 | `/api/users/watchlist/{tmdbId}` | POST | ✅ | Ajouter à watchlist |
 | `/api/users/watchlist/{tmdbId}` | DELETE | ✅ | Retirer de watchlist |
@@ -1291,10 +1510,10 @@ export class TmdbImageUtil {
 | `/api/users/following` | GET | ✅ | Mes abonnements |
 | `/api/users/followers` | GET | ✅ | Mes abonnés |
 | `/api/users/following/{userId}` | GET | ✅ | Vérifie si on suit |
-| `/api/rates/` | POST | ✅ | Noter un film |
+| `/api/rates/` | POST | ✅ | Noter un film (avec commentaire optionnel) |
 | `/api/recommendations/` | GET | ✅ | Mes recommandations |
 | `/api/recommendations/shared` | GET | ✅ | Films partagés |
-| `/api/recommendations/share` | POST | ✅ | Partager un film |
+| `/api/recommendations/share` | POST | ✅ | Partager un film (avec message optionnel) |
 
 ---
 

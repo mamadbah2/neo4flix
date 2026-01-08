@@ -33,7 +33,7 @@ public class RateControllerImpl implements RateController {
         String userId = jwt.getClaimAsString("sub"); // "sub" est l'ID de l'utilisateur dans le token JWT de Keycloak
 
         // Appeler le service pour créer la note
-        var rate = rateService.createRate(userId, rateRequest.getTmdbId(), rateRequest.getScore());
+        var rate = rateService.createRate(userId, rateRequest.getTmdbId(), rateRequest.getScore(), rateRequest.getComment());
          if (rate == null) {
             return ResponseEntity.ok(null);
         }

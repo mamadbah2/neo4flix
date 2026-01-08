@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import sn.dev.user_service.services.UserService;
 import sn.dev.user_service.web.controllers.UserController;
 import sn.dev.user_service.web.dto.requests.UserCreateRequest;
+import sn.dev.user_service.web.dto.responses.UserProfileResponse;
 import sn.dev.user_service.web.dto.responses.UserResponse;
 import sn.dev.user_service.web.mappers.UserMapper;
 
@@ -53,5 +54,24 @@ public class UserControllerImpl implements UserController {
         var user = userService.syncUser(jwt);
         return ResponseEntity.ok(UserMapper.toResponse(user));
         
+    }
+
+    @Override
+    public ResponseEntity<UserProfileResponse> getMyProfile(Jwt jwt) {
+        String userId = jwt.getClaimAsString("sub");
+        var profile = userService.getUserProfile(userId);
+        if (profile == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(profile);
+    }
+
+    @Override
+    public ResponseEntity<UserProfileResponse> getUserProfile(String userId) {
+        var profile = userService.getUserProfile(userId);
+        if (profile == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(profile);
     }
 }

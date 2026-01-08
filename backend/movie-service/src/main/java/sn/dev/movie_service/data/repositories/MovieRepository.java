@@ -85,4 +85,42 @@ public interface MovieRepository extends Neo4jRepository<Movie, Long> {
            "WHERE NOT (u)-[:RATED]->(rec) " +
            "RETURN DISTINCT rec.tmdbId as tmdbId LIMIT 10")
     List<Long> getGenreBasedRecsTmdbIds(@Param("userId") String userId);
+
+    // ================== LOCAL RATINGS ==================
+
+    /**
+     * Récupère la note moyenne locale d'un film.
+     */
+    @Query("MATCH (:User)-[r:RATED]->(m:Movie {tmdbId: $tmdbId}) " +
+           "RETURN avg(r.score)")
+    Double getAverageRating(@Param("tmdbId") Long tmdbId);
+
+    /**
+     * Récupère le nombre de notes locales d'un film.
+     */
+    @Query("MATCH (:User)-[r:RATED]->(m:Movie {tmdbId: $tmdbId}) " +
+           "RETURN count(r)")
+    Integer getRatingCount(@Param("tmdbId") Long tmdbId);
+
+    /**
+     * Récupère les avis locaux d'un film avec pagination.
+     */
+    @Query("MATCH (u:User)-[r:RATED]->(m:Movie {tmdbId: $tmdbId}) " +
+           "WHERE r.comment IS NOT NULL AND r.comment <> '' " +
+           "RETURN u.keycloakId as userId, u.username as username, r.score as score, r.comment as comment, r.createdAt as createdAt " +
+           "ORDER BY r.createdAt DESC " +
+           "SKIP $skip LIMIT $limit")
+    List<sn.dev.movie_service.data.projections.LocalReviewProjection> getLocalReviews(
+            @Param("tmdbId") Long tmdbId,
+            @Param("skip") int skip,
+            @Param("limit") int limit
+    );
+
+    /**
+     * Compte le nombre d'avis locaux (avec commentaire) d'un film.
+     */
+    @Query("MATCH (u:User)-[r:RATED]->(m:Movie {tmdbId: $tmdbId}) " +
+           "WHERE r.comment IS NOT NULL AND r.comment <> '' " +
+           "RETURN count(r)")
+    Integer countLocalReviews(@Param("tmdbId") Long tmdbId);
 }

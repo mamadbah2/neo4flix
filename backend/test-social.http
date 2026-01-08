@@ -6,13 +6,15 @@
 # 2. User B (cheimbaye) se connecte et récupère son token
 # 3. User A suit User B
 # 4. User A ajoute 'Inception' à sa watchlist
-# 5. User A partage 'Inception' avec User B
+# 5. User A partage 'Inception' avec User B (avec message personnalisé)
 # 6. User B appelle /api/recommendations et voit 'Inception' en tête (boost social)
 # 7. Tests d'erreurs (partage sans follow, etc.)
+# 8. Profils utilisateur avec statistiques
+# 9. Reviews et Batch endpoint
 ###############################################################################
 
 @baseUrl = http://localhost:5050
-@movieId = 641fc921-f7bf-45d7-83b9-dd8069f22b96
+@tmdbId = 27205
 
 # Tokens - à récupérer dynamiquement
 @tokenUserA = {{loginUserA.response.body.access_token}}
@@ -77,7 +79,7 @@ Authorization: Bearer {{tokenUserB}}
 ###############################################################################
 
 ### 3.1 User A ajoute Inception à sa watchlist
-POST {{baseUrl}}/api/users/watchlist/{{movieId}}
+POST {{baseUrl}}/api/users/watchlist/{{tmdbId}}
 Authorization: Bearer {{tokenUserA}}
 
 ### 3.2 Vérifier la watchlist de User A
@@ -85,17 +87,28 @@ GET {{baseUrl}}/api/users/watchlist
 Authorization: Bearer {{tokenUserA}}
 
 ###############################################################################
-# ÉTAPE 4 : USER A PARTAGE INCEPTION AVEC USER B
+# ÉTAPE 4 : USER A PARTAGE INCEPTION AVEC USER B (avec message)
 ###############################################################################
 
-### 4.1 User A partage Inception avec User B
+### 4.1 User A partage Inception avec User B (avec message personnalisé)
 POST {{baseUrl}}/api/recommendations/share
 Authorization: Bearer {{tokenUserA}}
 Content-Type: application/json
 
 {
   "targetUserId": "{{userBId}}",
-  "movieId": "{{movieId}}"
+  "tmdbId": {{tmdbId}},
+  "message": "Tu dois absolument voir ce film, il est incroyable !"
+}
+
+### 4.2 Partage sans message (optionnel)
+POST {{baseUrl}}/api/recommendations/share
+Authorization: Bearer {{tokenUserA}}
+Content-Type: application/json
+
+{
+  "targetUserId": "{{userBId}}",
+  "tmdbId": 155
 }
 
 ###############################################################################
@@ -105,6 +118,11 @@ Content-Type: application/json
 ### 5.1 User B récupère ses recommandations (Inception devrait être en tête grâce au boost social)
 GET {{baseUrl}}/api/recommendations/
 Authorization: Bearer {{tokenUserB}}
+
+
+### 5 User B récupère ses recommandations (Inception devrait être en tête grâce au boost social)
+GET {{baseUrl}}/api/recommendations/
+Authorization: Bearer {{tokenUserA}}
 
 ### 5.2 User B récupère uniquement les films partagés par ses amis
 GET {{baseUrl}}/api/recommendations/shared
@@ -121,7 +139,7 @@ Content-Type: application/json
 
 {
   "targetUserId": "{{userAId}}",
-  "movieId": "{{movieId}}"
+  "tmdbId": {{tmdbId}}
 }
 
 ### 6.2 ERREUR - Partager avec soi-même -> 400 Bad Request
@@ -131,7 +149,7 @@ Content-Type: application/json
 
 {
   "targetUserId": "{{userAId}}",
-  "movieId": "{{movieId}}"
+  "tmdbId": {{tmdbId}}
 }
 
 ### 6.3 ERREUR - Partager un film inexistant -> 404 Not Found
@@ -141,7 +159,7 @@ Content-Type: application/json
 
 {
   "targetUserId": "{{userBId}}",
-  "movieId": "non-existent-movie-id"
+  "tmdbId": 999999999
 }
 
 ### 6.4 ERREUR - Requête sans targetUserId -> 400 Bad Request (validation)
@@ -150,10 +168,10 @@ Authorization: Bearer {{tokenUserA}}
 Content-Type: application/json
 
 {
-  "movieId": "{{movieId}}"
+  "tmdbId": {{tmdbId}}
 }
 
-### 6.5 ERREUR - Requête sans movieId -> 400 Bad Request (validation)
+### 6.5 ERREUR - Requête sans tmdbId -> 400 Bad Request (validation)
 POST {{baseUrl}}/api/recommendations/share
 Authorization: Bearer {{tokenUserA}}
 Content-Type: application/json
@@ -171,8 +189,61 @@ DELETE {{baseUrl}}/api/users/follow/{{userBId}}
 Authorization: Bearer {{tokenUserA}}
 
 ### 7.2 User A supprime Inception de sa watchlist
-DELETE {{baseUrl}}/api/users/watchlist/{{movieId}}
+DELETE {{baseUrl}}/api/users/watchlist/{{tmdbId}}
 Authorization: Bearer {{tokenUserA}}
+
+###############################################################################
+# ÉTAPE 8 : PROFILS UTILISATEUR AVEC STATISTIQUES
+###############################################################################
+
+### 8.1 Mon profil avec statistiques
+GET {{baseUrl}}/api/users/profile
+Authorization: Bearer {{tokenUserA}}
+
+### 8.2 Profil d'un autre utilisateur
+GET {{baseUrl}}/api/users/profile/{{userBId}}
+Authorization: Bearer {{tokenUserA}}
+
+###############################################################################
+# ÉTAPE 9 : REVIEWS ET BATCH ENDPOINT
+###############################################################################
+
+### 9.1 Récupérer les avis d'un film (paginé)
+GET {{baseUrl}}/api/movies/{{tmdbId}}/reviews?page=1&size=5&language=fr-FR
+
+### 9.2 Récupérer plusieurs films en une seule requête (Batch)
+POST {{baseUrl}}/api/movies/batch
+Content-Type: application/json
+
+{
+  "tmdbIds": [27205, 155, 603, 550],
+  "language": "fr-FR"
+}
+
+###############################################################################
+# ÉTAPE 10 : NOTER UN FILM AVEC COMMENTAIRE
+###############################################################################
+
+### 10.1 Noter un film avec commentaire
+POST {{baseUrl}}/api/rates/
+Authorization: Bearer {{tokenUserA}}
+Content-Type: application/json
+
+{
+  "tmdbId": {{tmdbId}},
+  "score": 9,
+  "comment": "Un chef-d'œuvre absolu de Christopher Nolan !"
+}
+
+### 10.2 Noter un film sans commentaire
+POST {{baseUrl}}/api/rates/
+Authorization: Bearer {{tokenUserB}}
+Content-Type: application/json
+
+{
+  "tmdbId": {{tmdbId}},
+  "score": 8
+}
 
 ###############################################################################
 # BONUS : REFRESH TOKENS

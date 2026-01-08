@@ -24,7 +24,7 @@ public class RateServiceImpl implements RateService {
     private final InternalMovieClient internalMovieClient;
 
     @Override
-    public Rate createRate(String userId, Long tmdbId, int score) {
+    public Rate createRate(String userId, Long tmdbId, int score, String comment) {
         // 1. Synchroniser le film avec movie-service
         try {
             var syncResponse = internalMovieClient.syncMovie(tmdbId);
@@ -33,9 +33,10 @@ public class RateServiceImpl implements RateService {
             log.warn("Impossible de synchroniser le film {}: {}", tmdbId, e.getMessage());
         }
         
-        // 2. Créer la notation
-        log.debug("Création de la notation pour userId: {}, tmdbId: {}, score: {}", userId, tmdbId, score);
-        rateRepository.createRate(userId, tmdbId, score);
+        // 2. Créer la notation avec date
+        String createdAt = java.time.Instant.now().toString();
+        log.debug("Création de la notation pour userId: {}, tmdbId: {}, score: {}, comment: {}", userId, tmdbId, score, comment);
+        rateRepository.createRate(userId, tmdbId, score, comment, createdAt);
         
         return null;
     }

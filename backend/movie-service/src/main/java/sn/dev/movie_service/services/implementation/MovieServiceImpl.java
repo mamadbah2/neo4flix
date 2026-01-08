@@ -15,10 +15,14 @@ import sn.dev.movie_service.exceptions.MovieNotFoundException;
 import sn.dev.movie_service.exceptions.TmdbApiException;
 import sn.dev.movie_service.services.MovieService;
 import sn.dev.movie_service.services.TmdbGenreMapping;
+import sn.dev.movie_service.web.dto.responses.CastMemberResponse;
 import sn.dev.movie_service.web.dto.responses.GenreResponse;
 import sn.dev.movie_service.web.dto.responses.MoviePageResponse;
 import sn.dev.movie_service.web.dto.responses.MovieResponse;
+import sn.dev.movie_service.web.dto.responses.ReviewPageResponse;
+import sn.dev.movie_service.web.dto.responses.ReviewResponse;
 import sn.dev.movie_service.web.dto.responses.SyncResponse;
+import sn.dev.movie_service.web.dto.tmdb.TmdbCreditsResponse;
 import sn.dev.movie_service.web.dto.tmdb.TmdbGenreDto;
 import sn.dev.movie_service.web.dto.tmdb.TmdbGenreListResponse;
 import sn.dev.movie_service.web.dto.tmdb.TmdbMovieDto;
@@ -146,11 +150,18 @@ public class MovieServiceImpl implements MovieService {
             // 2. Récupérer les vidéos (bande-annonces)
             String trailerUrl = fetchTrailerUrl(tmdbId, language);
             
-            // 3. Vérifier si le film existe dans Neo4j
+            // 3. Récupérer le casting (top 7 acteurs)
+            List<CastMemberResponse> cast = fetchCast(tmdbId, language, 7);
+            
+            // 4. Vérifier si le film existe dans Neo4j
             boolean existsInNeo4j = movieRepository.existsByTmdbId(tmdbId);
             
-            // 4. Mapper vers la réponse enrichie
-            return mapToDetailedResponse(tmdbMovie, existsInNeo4j, trailerUrl);
+            // 5. Récupérer les notes locales
+            Double localAvgRating = movieRepository.getAverageRating(tmdbId);
+            Integer localRatingCount = movieRepository.getRatingCount(tmdbId);
+            
+            // 6. Mapper vers la réponse enrichie
+            return mapToDetailedResponse(tmdbMovie, existsInNeo4j, trailerUrl, cast, localAvgRating, localRatingCount);
             
         } catch (FeignException.NotFound e) {
             throw new MovieNotFoundException(tmdbId);
@@ -213,6 +224,73 @@ public class MovieServiceImpl implements MovieService {
         } catch (FeignException e) {
             throw new TmdbApiException("Impossible de synchroniser le film " + tmdbId, e);
         }
+    }
+
+    // ================== REVIEWS ==================
+
+    @Override
+    @Transactional(readOnly = true)
+    public ReviewPageResponse getMovieReviews(Long tmdbId, String language, Integer page, Integer size) {
+        List<ReviewResponse> allReviews = new ArrayList<>();
+        int skip = (page - 1) * size;
+        
+        // 1. Récupérer les avis locaux (prioritaires)
+        var localReviews = movieRepository.getLocalReviews(tmdbId, 0, 100); // Get all local reviews
+        
+        for (var local : localReviews) {
+            allReviews.add(ReviewResponse.builder()
+                    .id("local-" + local.getUserId())
+                    .author(local.getUsername() != null ? local.getUsername() : "Utilisateur Neo4flix")
+                    .authorUsername(local.getUsername())
+                    .content(local.getComment())
+                    .rating(local.getScore() != null ? local.getScore().doubleValue() : null)
+                    .createdAt(local.getCreatedAt())
+                    .isLocal(true)
+                    .build());
+        }
+        
+        // 2. Récupérer les avis TMDb (filtrés fr-FR)
+        try {
+            var tmdbReviews = tmdbClient.getMovieReviews(tmdbId, language, 1);
+            if (tmdbReviews != null && tmdbReviews.getResults() != null) {
+                for (var review : tmdbReviews.getResults()) {
+                    allReviews.add(ReviewResponse.builder()
+                            .id(review.getId())
+                            .author(review.getAuthor())
+                            .authorUsername(review.getAuthorDetails() != null ? review.getAuthorDetails().getUsername() : null)
+                            .avatarPath(review.getAuthorDetails() != null ? review.getAuthorDetails().getAvatarPath() : null)
+                            .content(review.getContent())
+                            .rating(review.getAuthorDetails() != null ? review.getAuthorDetails().getRating() : null)
+                            .createdAt(review.getCreatedAt())
+                            .isLocal(false)
+                            .build());
+                }
+            }
+        } catch (FeignException e) {
+            log.warn("Impossible de récupérer les avis TMDb pour le film {}: {}", tmdbId, e.getMessage());
+        }
+        
+        // 3. Paginer les résultats
+        int totalResults = allReviews.size();
+        int totalPages = (int) Math.ceil((double) totalResults / size);
+        
+        List<ReviewResponse> paginatedReviews = allReviews.stream()
+                .skip(skip)
+                .limit(size)
+                .toList();
+        
+        // 4. Récupérer les stats locales
+        Double localAvgRating = movieRepository.getAverageRating(tmdbId);
+        Integer localRatingCount = movieRepository.getRatingCount(tmdbId);
+        
+        return ReviewPageResponse.builder()
+                .page(page)
+                .totalPages(totalPages)
+                .totalResults(totalResults)
+                .reviews(paginatedReviews)
+                .localAverageRating(localAvgRating)
+                .localRatingCount(localRatingCount != null ? localRatingCount : 0)
+                .build();
     }
 
     // ================== RECOMMANDATIONS ==================
@@ -278,7 +356,8 @@ public class MovieServiceImpl implements MovieService {
     /**
      * Mappe un film TMDb détaillé vers une réponse complète.
      */
-    private MovieResponse mapToDetailedResponse(TmdbMovieDto tmdbMovie, boolean syncedInNeo4j, String trailerUrl) {
+    private MovieResponse mapToDetailedResponse(TmdbMovieDto tmdbMovie, boolean syncedInNeo4j, String trailerUrl,
+                                                  List<CastMemberResponse> cast, Double localAvgRating, Integer localRatingCount) {
         List<String> genreNames = new ArrayList<>();
         if (tmdbMovie.getGenres() != null) {
             genreNames = tmdbMovie.getGenres().stream()
@@ -306,7 +385,42 @@ public class MovieServiceImpl implements MovieService {
                 .tagline(tmdbMovie.getTagline())
                 .trailerUrl(trailerUrl)
                 .syncedInNeo4j(syncedInNeo4j)
+                .cast(cast)
+                .localAverageRating(localAvgRating)
+                .localRatingCount(localRatingCount != null ? localRatingCount : 0)
                 .build();
+    }
+
+    /**
+     * Récupère le top N des acteurs d'un film.
+     */
+    private List<CastMemberResponse> fetchCast(Long tmdbId, String language, int limit) {
+        try {
+            TmdbCreditsResponse credits = tmdbClient.getMovieCredits(tmdbId, language);
+            if (credits == null || credits.getCast() == null) {
+                return new ArrayList<>();
+            }
+            
+            return credits.getCast().stream()
+                    .filter(c -> "Acting".equals(c.getKnownForDepartment()))
+                    .sorted((a, b) -> {
+                        int orderA = a.getOrder() != null ? a.getOrder() : Integer.MAX_VALUE;
+                        int orderB = b.getOrder() != null ? b.getOrder() : Integer.MAX_VALUE;
+                        return Integer.compare(orderA, orderB);
+                    })
+                    .limit(limit)
+                    .map(c -> CastMemberResponse.builder()
+                            .id(c.getId())
+                            .name(c.getName())
+                            .character(c.getCharacter())
+                            .profilePath(c.getProfilePath())
+                            .order(c.getOrder())
+                            .build())
+                    .toList();
+        } catch (FeignException e) {
+            log.warn("Impossible de récupérer le casting pour le film {}: {}", tmdbId, e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -371,7 +485,41 @@ public class MovieServiceImpl implements MovieService {
             try {
                 TmdbMovieDto tmdbMovie = tmdbClient.getMovieDetails(tmdbId, language);
                 String trailerUrl = fetchTrailerUrl(tmdbId, language);
-                movies.add(mapToDetailedResponse(tmdbMovie, true, trailerUrl));
+                List<CastMemberResponse> cast = fetchCast(tmdbId, language, 7);
+                Double localAvgRating = movieRepository.getAverageRating(tmdbId);
+                Integer localRatingCount = movieRepository.getRatingCount(tmdbId);
+                movies.add(mapToDetailedResponse(tmdbMovie, true, trailerUrl, cast, localAvgRating, localRatingCount));
+            } catch (FeignException e) {
+                log.warn("Impossible de récupérer le film {} depuis TMDb: {}", tmdbId, e.getMessage());
+            }
+        }
+        
+        return movies;
+    }
+
+    // ================== BATCH ==================
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MovieResponse> getBatchMovies(List<Long> tmdbIds, String language, Boolean detailed) {
+        List<MovieResponse> movies = new ArrayList<>();
+        
+        for (Long tmdbId : tmdbIds) {
+            try {
+                TmdbMovieDto tmdbMovie = tmdbClient.getMovieDetails(tmdbId, language);
+                
+                if (Boolean.TRUE.equals(detailed)) {
+                    // Version détaillée avec casting et notes
+                    String trailerUrl = fetchTrailerUrl(tmdbId, language);
+                    List<CastMemberResponse> cast = fetchCast(tmdbId, language, 7);
+                    Double localAvgRating = movieRepository.getAverageRating(tmdbId);
+                    Integer localRatingCount = movieRepository.getRatingCount(tmdbId);
+                    boolean existsInNeo4j = movieRepository.existsByTmdbId(tmdbId);
+                    movies.add(mapToDetailedResponse(tmdbMovie, existsInNeo4j, trailerUrl, cast, localAvgRating, localRatingCount));
+                } else {
+                    // Version légère pour watchlist
+                    movies.add(mapToSimpleResponse(tmdbMovie));
+                }
             } catch (FeignException e) {
                 log.warn("Impossible de récupérer le film {} depuis TMDb: {}", tmdbId, e.getMessage());
             }
