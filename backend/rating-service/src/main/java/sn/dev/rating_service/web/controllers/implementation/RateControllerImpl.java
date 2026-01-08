@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import sn.dev.rating_service.services.RateService;
 import sn.dev.rating_service.web.controllers.RateController;
 import sn.dev.rating_service.web.dto.requests.RateRequest;
+import sn.dev.rating_service.web.dto.responses.MovieRatingsPageResponse;
 import sn.dev.rating_service.web.dto.responses.RateResponse;
 import sn.dev.rating_service.web.mappers.RateMapper;
 
@@ -40,6 +41,13 @@ public class RateControllerImpl implements RateController {
         // Mapper l'entité vers le DTO de réponse
         RateResponse response = RateMapper.toDto(rate);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<MovieRatingsPageResponse> getMovieRatings(Long tmdbId, int page, int size) {
+        // Cet endpoint est public, pas besoin d'authentification
+        var response = rateService.getMovieRatings(tmdbId, page, size);
         return ResponseEntity.ok(response);
     }
 }

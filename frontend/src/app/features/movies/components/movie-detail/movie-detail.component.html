@@ -127,6 +127,16 @@
               title="Laisser un avis">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
+            
+            <!-- Share Button -->
+            @if (authService.isAuthenticated()) {
+              <button 
+                class="w-12 h-12 rounded-full border-2 border-white/40 bg-white/10 flex items-center justify-center hover:bg-[#E50914]/50 hover:border-[#E50914] transition"
+                (click)="openSharePanel()"
+                title="Partager avec des amis">
+                <i class="fa-solid fa-share-nodes"></i>
+              </button>
+            }
           </div>
         </div>
       </div>
@@ -311,7 +321,42 @@
         @if (genreRecommendationsConfig) {
           <app-movie-row [config]="genreRecommendationsConfig" />
         }
-        <app-movie-row [config]="similarMoviesConfig" />
+        
+        <!-- Personalized Recommendations (if logged in and has recommendations) -->
+        @if (hasPersonalizedRecommendations()) {
+          <section>
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+              <span class="text-[#E50914]"><i class="fa-solid fa-sparkles"></i></span>
+              Recommandé pour vous
+            </h2>
+            <div class="flex space-x-4 overflow-x-auto no-scrollbar pb-4">
+              @for (movie of personalizedRecommendations(); track movie.tmdbId) {
+                <a 
+                  [routerLink]="['/movie', movie.tmdbId]"
+                  class="flex-shrink-0 w-[180px] group cursor-pointer">
+                  <div class="relative aspect-[2/3] rounded-lg overflow-hidden mb-2 bg-gray-800">
+                    <img 
+                      [src]="getCastImageUrl(movie.posterPath)" 
+                      [alt]="movie.title"
+                      class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                      loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+                    @if (movie.voteAverage) {
+                      <div class="absolute top-2 right-2 bg-black/70 px-2 py-0.5 rounded text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-star text-yellow-500"></i>
+                        {{ movie.voteAverage.toFixed(1) }}
+                      </div>
+                    }
+                  </div>
+                  <p class="text-sm font-semibold truncate group-hover:text-[#E50914] transition">{{ movie.title }}</p>
+                </a>
+              }
+            </div>
+          </section>
+        } @else {
+          <!-- Fallback to similar movies when not logged in or no personalized recommendations -->
+          <app-movie-row [config]="similarMoviesConfig" />
+        }
       </div>
     </div>
     
@@ -379,6 +424,106 @@
         </div>
       </div>
     }
+    
+    <!-- Share Panel -->
+    <app-slide-in-panel
+      [open]="showSharePanel()"
+      (closed)="closeSharePanel()"
+      title="Partager avec des amis"
+      width="400px">
+      
+      <div class="p-6">
+        @if (movie(); as m) {
+          <!-- Movie Preview -->
+          <div class="flex items-center gap-4 mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
+            <img 
+              [src]="getCastImageUrl(m.posterPath)" 
+              [alt]="m.title"
+              class="w-16 h-24 object-cover rounded-lg">
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-lg truncate">{{ m.title }}</h4>
+              <p class="text-sm text-gray-400">{{ releaseYear() }}</p>
+            </div>
+          </div>
+        }
+        
+        <!-- Friends List -->
+        <div class="mb-6">
+          <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">
+            Sélectionnez vos amis
+          </h4>
+          
+          @if (isLoadingFriends()) {
+            <!-- Loading Skeleton -->
+            <div class="space-y-3">
+              @for (i of [1, 2, 3, 4]; track i) {
+                <div class="flex items-center gap-3 p-3 animate-pulse">
+                  <div class="w-10 h-10 rounded-full bg-gray-700"></div>
+                  <div class="h-4 bg-gray-700 rounded w-24"></div>
+                </div>
+              }
+            </div>
+          } @else if (friends().length === 0) {
+            <!-- No Friends -->
+            <div class="text-center py-8">
+              <i class="fa-solid fa-user-plus text-4xl text-gray-600 mb-3"></i>
+              <p class="text-gray-400">Vous ne suivez personne pour le moment</p>
+              <p class="text-sm text-gray-500 mt-1">Suivez des utilisateurs pour leur partager des films</p>
+            </div>
+          } @else {
+            <!-- Friends List -->
+            <div class="space-y-2 max-h-[300px] overflow-y-auto">
+              @for (friend of friends(); track friend.id) {
+                <button 
+                  (click)="toggleFriendSelection(friend.id)"
+                  class="w-full flex items-center gap-3 p-3 rounded-xl transition"
+                  [class.bg-[#E50914]/20]="isFriendSelected(friend.id)"
+                  [class.border-[#E50914]]="isFriendSelected(friend.id)"
+                  [class.border]="isFriendSelected(friend.id)"
+                  [class.hover:bg-white/5]="!isFriendSelected(friend.id)">
+                  <div class="relative">
+                    <img 
+                      [src]="getAvatarUrl(friend.username)" 
+                      [alt]="friend.username"
+                      class="w-10 h-10 rounded-full bg-gray-700">
+                    @if (isFriendSelected(friend.id)) {
+                      <div class="absolute -top-1 -right-1 w-5 h-5 bg-[#E50914] rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-check text-xs"></i>
+                      </div>
+                    }
+                  </div>
+                  <span class="font-medium">{{ friend.username }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+        
+        <!-- Selected Count & Share Button -->
+        @if (friends().length > 0) {
+          <div class="space-y-4">
+            @if (selectedFriends().size > 0) {
+              <p class="text-sm text-gray-400 text-center">
+                {{ selectedFriends().size }} ami{{ selectedFriends().size > 1 ? 's' : '' }} sélectionné{{ selectedFriends().size > 1 ? 's' : '' }}
+              </p>
+            }
+            
+            <button 
+              (click)="shareWithFriends()"
+              [disabled]="selectedFriends().size === 0 || isSharingMovie()"
+              class="w-full bg-[#E50914] hover:bg-[#B20710] py-4 rounded-xl font-bold text-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              @if (isSharingMovie()) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Partage en cours...
+              } @else {
+                <i class="fa-solid fa-share"></i>
+                Partager
+              }
+            </button>
+          </div>
+        }
+      </div>
+    </app-slide-in-panel>
   } @else {
     <!-- Error State -->
     <div class="h-screen flex items-center justify-center">

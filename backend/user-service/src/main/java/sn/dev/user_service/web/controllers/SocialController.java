@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import sn.dev.user_service.web.dto.responses.UserResponse;
+import sn.dev.user_service.web.dto.responses.UserSuggestionsPageResponse;
 
 @RequestMapping("/api/users")
 public interface SocialController {
@@ -30,4 +32,15 @@ public interface SocialController {
 
     @GetMapping("/following/{targetUserId}")
     ResponseEntity<Boolean> isFollowing(@AuthenticationPrincipal Jwt jwt, @PathVariable String targetUserId);
+
+    /**
+     * Récupère les utilisateurs suggérés (non suivis) avec pagination.
+     * Tri aléatoire pour la découverte.
+     */
+    @GetMapping("/discover")
+    ResponseEntity<UserSuggestionsPageResponse> discoverUsers(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    );
 }

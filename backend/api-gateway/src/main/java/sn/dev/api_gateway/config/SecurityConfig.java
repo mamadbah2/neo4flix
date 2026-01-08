@@ -45,6 +45,9 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.POST, "/api/movies/batch").permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/movies/{tmdbId}/sync").permitAll()
                         
+                        // Endpoints publics - Ratings par film
+                        .pathMatchers(HttpMethod.GET, "/api/rates/movie/**").permitAll()
+                        
                         // Endpoints internes
                         .pathMatchers("/internal/**").permitAll()
                         

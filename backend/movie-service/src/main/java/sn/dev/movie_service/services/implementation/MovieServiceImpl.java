@@ -1,8 +1,11 @@
 package sn.dev.movie_service.services.implementation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +30,6 @@ import sn.dev.movie_service.web.dto.tmdb.TmdbGenreDto;
 import sn.dev.movie_service.web.dto.tmdb.TmdbGenreListResponse;
 import sn.dev.movie_service.web.dto.tmdb.TmdbMovieDto;
 import sn.dev.movie_service.web.dto.tmdb.TmdbPageResponse;
-import sn.dev.movie_service.web.dto.tmdb.TmdbVideoDto;
 import sn.dev.movie_service.web.dto.tmdb.TmdbVideosResponse;
 
 /**
@@ -42,6 +44,7 @@ public class MovieServiceImpl implements MovieService {
 
     private final TmdbClient tmdbClient;
     private final MovieRepository movieRepository;
+    private final Neo4jClient neo4jClient;
 
     // ================== DISCOVERY (TMDb Direct) ==================
 
@@ -234,17 +237,41 @@ public class MovieServiceImpl implements MovieService {
         List<ReviewResponse> allReviews = new ArrayList<>();
         int skip = (page - 1) * size;
         
-        // 1. Récupérer les avis locaux (prioritaires)
-        var localReviews = movieRepository.getLocalReviews(tmdbId, 0, 100); // Get all local reviews
+        // 1. Récupérer les avis locaux (prioritaires) via Neo4jClient pour éviter les problèmes de mapping
+        String cypherQuery = "MATCH (u:User)-[r:RATED]->(m:Movie {tmdbId: $tmdbId}) " +
+                "WHERE r.comment IS NOT NULL AND r.comment <> '' " +
+                "RETURN u.keycloakId as userId, u.username as username, r.score as score, r.comment as comment, r.createdAt as createdAt " +
+                "ORDER BY r.createdAt DESC";
+        
+        Collection<Map<String, Object>> localReviews = neo4jClient.query(cypherQuery)
+                .bind(tmdbId).to("tmdbId")
+                .fetch()
+                .all()
+                .stream()
+                .map(record -> Map.of(
+                        "userId", record.get("userId") != null ? record.get("userId") : "",
+                        "username", record.get("username") != null ? record.get("username") : "",
+                        "score", record.get("score") != null ? record.get("score") : 0L,
+                        "comment", record.get("comment") != null ? record.get("comment") : "",
+                        "createdAt", record.get("createdAt") != null ? record.get("createdAt") : ""
+                ))
+                .toList();
         
         for (var local : localReviews) {
+            String userId = (String) local.get("userId");
+            String username = (String) local.get("username");
+            Object scoreObj = local.get("score");
+            Long scoreValue = scoreObj instanceof Long ? (Long) scoreObj : (scoreObj instanceof Integer ? ((Integer) scoreObj).longValue() : null);
+            String comment = (String) local.get("comment");
+            String createdAt = (String) local.get("createdAt");
+            
             allReviews.add(ReviewResponse.builder()
-                    .id("local-" + local.getUserId())
-                    .author(local.getUsername() != null ? local.getUsername() : "Utilisateur Neo4flix")
-                    .authorUsername(local.getUsername())
-                    .content(local.getComment())
-                    .rating(local.getScore() != null ? local.getScore().doubleValue() : null)
-                    .createdAt(local.getCreatedAt())
+                    .id("local-" + userId)
+                    .author(username != null && !username.isEmpty() ? username : "Utilisateur Neo4flix")
+                    .authorUsername(username)
+                    .content(comment)
+                    .rating(scoreValue != null ? scoreValue.doubleValue() : null)
+                    .createdAt(createdAt)
                     .isLocal(true)
                     .build());
         }

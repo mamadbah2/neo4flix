@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Movie, MoviePage, Genre, ReviewPage } from '../interfaces/movie.interface';
+import { Movie, MoviePage, Genre, ReviewPage, BatchMoviesRequest } from '../interfaces/movie.interface';
 
 /**
  * MovieService - Handles all movie-related API calls
@@ -170,6 +170,29 @@ export class MovieService {
 
     return this.http.get<MoviePage>(`${this.apiUrl}/search`, { params })
       .pipe(catchError(this.handleError<MoviePage>('searchMovies')));
+  }
+
+  // ===========================================
+  // BATCH ENDPOINT
+  // ===========================================
+
+  /**
+   * Get multiple movies by their TMDb IDs in a single request
+   * Useful for enriching watchlist or recommendation lists
+   * @param tmdbIds Array of TMDb IDs (max 50)
+   */
+  getMoviesBatch(tmdbIds: number[]): Observable<Movie[]> {
+    if (!tmdbIds || tmdbIds.length === 0) {
+      return of([]);
+    }
+
+    const request: BatchMoviesRequest = {
+      tmdbIds,
+      language: this.defaultLanguage
+    };
+
+    return this.http.post<Movie[]>(`${this.apiUrl}/batch`, request)
+      .pipe(catchError(this.handleError<Movie[]>('getMoviesBatch', [])));
   }
 
   // ===========================================

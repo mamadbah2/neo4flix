@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import sn.dev.user_service.services.SocialService;
 import sn.dev.user_service.web.controllers.SocialController;
 import sn.dev.user_service.web.dto.responses.UserResponse;
+import sn.dev.user_service.web.dto.responses.UserSuggestionsPageResponse;
 import sn.dev.user_service.web.mappers.UserMapper;
 
 @RestController
@@ -60,5 +61,13 @@ public class SocialControllerImpl implements SocialController {
         String userId = jwt.getClaimAsString("sub");
         boolean following = socialService.isFollowing(userId, targetUserId);
         return ResponseEntity.ok(following);
+    }
+
+    @Override
+    public ResponseEntity<UserSuggestionsPageResponse> discoverUsers(
+            @AuthenticationPrincipal Jwt jwt, int page, int size) {
+        String userId = jwt.getClaimAsString("sub");
+        var response = socialService.getSuggestedUsers(userId, page, size);
+        return ResponseEntity.ok(response);
     }
 }

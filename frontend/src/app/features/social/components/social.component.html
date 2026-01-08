@@ -69,10 +69,6 @@
                 <div class="text-[10px] uppercase text-gray-500 font-bold">Abonnements</div>
               </div>
             </div>
-            
-            <button class="w-full py-3 bg-[#E50914] text-white rounded-xl font-bold text-sm transition hover:bg-[#B20710] flex items-center justify-center gap-2 shadow-lg shadow-[#E50914]/20">
-              <i class="fa-solid fa-pen-to-square"></i> Modifier le profil
-            </button>
           }
         </div>
         
@@ -82,7 +78,10 @@
             <h4 class="font-bold text-lg flex items-center gap-2">
               <i class="fa-solid fa-user-group text-[#E50914] text-sm"></i> Amis
             </h4>
-            <button class="text-gray-400 hover:text-white transition">
+            <button 
+              (click)="openDiscoverPanel()"
+              class="text-gray-400 hover:text-[#E50914] transition"
+              title="Découvrir des utilisateurs">
               <i class="fa-solid fa-circle-plus"></i>
             </button>
           </div>
@@ -300,3 +299,113 @@
     </div>
   </main>
 </div>
+
+<!-- Discover Users Slide-in Panel -->
+<app-slide-in-panel 
+  [open]="showDiscoverPanel()" 
+  title="Découvrir des utilisateurs" 
+  width="400px"
+  (closed)="closeDiscoverPanel()">
+  
+  <div class="flex flex-col h-full">
+    <!-- Search Input -->
+    <div class="p-4 border-b border-gray-800">
+      <div class="relative">
+        <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery"
+          placeholder="Rechercher un utilisateur..." 
+          class="w-full bg-[#2a2a2a] text-white text-sm rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#E50914] placeholder-gray-500">
+      </div>
+    </div>
+
+    <!-- Users List -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-3">
+      @if (isLoadingDiscover() && discoverUsers().length === 0) {
+        <!-- Skeleton Loading -->
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <div class="flex items-center gap-3 p-3 bg-[#2a2a2a] rounded-xl animate-pulse">
+            <div class="w-12 h-12 rounded-full bg-gray-700"></div>
+            <div class="flex-1">
+              <div class="h-4 bg-gray-700 rounded w-24 mb-2"></div>
+              <div class="h-3 bg-gray-700 rounded w-32"></div>
+            </div>
+            <div class="w-20 h-8 bg-gray-700 rounded-lg"></div>
+          </div>
+        }
+      } @else if (filteredUsers().length === 0) {
+        <!-- Empty State -->
+        <div class="text-center py-12">
+          <i class="fa-solid fa-users-slash text-4xl text-gray-600 mb-4"></i>
+          <p class="text-gray-400 text-sm">
+            @if (searchQuery()) {
+              Aucun utilisateur trouvé pour "{{ searchQuery() }}"
+            } @else {
+              Aucun utilisateur à suggérer pour le moment
+            }
+          </p>
+        </div>
+      } @else {
+        <!-- User Cards -->
+        @for (user of filteredUsers(); track user.id) {
+          <div class="flex items-center gap-3 p-3 bg-[#2a2a2a] rounded-xl hover:bg-[#3a3a3a] transition-colors">
+            <!-- Avatar -->
+            <img 
+              [src]="getAvatarUrl(user.username)" 
+              [alt]="user.username"
+              class="w-12 h-12 rounded-full object-cover border-2 border-[#E50914]/30">
+            
+            <!-- User Info -->
+            <div class="flex-1 min-w-0">
+              <p class="text-white font-semibold text-sm truncate">{{ user.username }}</p>
+              <div class="flex items-center gap-3 text-xs text-gray-400 mt-1">
+                <span class="flex items-center gap-1">
+                  <i class="fa-solid fa-users text-[10px]"></i>
+                  {{ user.followersCount }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="fa-solid fa-star text-[10px]"></i>
+                  {{ user.ratingsCount }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="fa-solid fa-bookmark text-[10px]"></i>
+                  {{ user.watchlistCount }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Follow Button -->
+            <button 
+              (click)="followFromDiscover(user)"
+              [disabled]="isFollowingInProgress(user.id)"
+              class="px-4 py-2 bg-[#E50914] text-white text-xs font-bold rounded-lg hover:bg-[#b8070f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              @if (isFollowingInProgress(user.id)) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+              } @else {
+                <i class="fa-solid fa-user-plus"></i>
+              }
+              Suivre
+            </button>
+          </div>
+        }
+        
+        <!-- Load More Button -->
+        @if (hasMoreUsers()) {
+          <button 
+            (click)="loadMoreUsers()"
+            [disabled]="isLoadingDiscover()"
+            class="w-full py-3 mt-4 bg-[#2a2a2a] text-gray-300 text-sm font-medium rounded-xl hover:bg-[#3a3a3a] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+            @if (isLoadingDiscover()) {
+              <i class="fa-solid fa-spinner fa-spin"></i>
+              Chargement...
+            } @else {
+              <i class="fa-solid fa-arrow-down"></i>
+              Voir plus d'utilisateurs
+            }
+          </button>
+        }
+      }
+    </div>
+  </div>
+</app-slide-in-panel>

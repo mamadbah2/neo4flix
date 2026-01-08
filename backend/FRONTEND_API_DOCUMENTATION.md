@@ -837,6 +837,52 @@ Authorization: Bearer <access_token>
 }
 ```
 
+### 8. Découvrir des Utilisateurs à Suivre
+
+**Endpoint:** `GET /api/users/discover`
+
+| Paramètre | Type | Défaut | Description |
+|-----------|------|--------|-------------|
+| `page` | number | 1 | Numéro de page |
+| `size` | number | 10 | Nombre d'utilisateurs par page |
+
+**Auth:** ✅ Requise (Bearer Token)
+
+**Description:** Retourne les utilisateurs que l'utilisateur connecté ne suit pas encore. Tri aléatoire pour favoriser la découverte.
+
+**Exemple:**
+```http
+GET http://localhost:5050/api/users/discover?page=1&size=10
+Authorization: Bearer <access_token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "page": 1,
+  "totalPages": 5,
+  "totalResults": 47,
+  "users": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "username": "cinephile_42",
+      "followersCount": 156,
+      "ratingsCount": 87,
+      "watchlistCount": 23
+    },
+    {
+      "id": "b2c3d4e5-f6g7-8901-bcde-fg2345678901",
+      "username": "movie_lover",
+      "followersCount": 42,
+      "ratingsCount": 124,
+      "watchlistCount": 15
+    }
+  ]
+}
+```
+
+> **Note:** Les utilisateurs sont triés aléatoirement. L'utilisateur connecté n'apparaît jamais dans les résultats.
+
 ---
 
 ## Rating Service - API Notes
@@ -870,6 +916,46 @@ Authorization: Bearer <access_token>
 ```
 
 > ⚠️ **Note:** Le backend synchronise automatiquement le film dans Neo4j si nécessaire avant d'enregistrer la note. Le commentaire sera visible dans les avis locaux du film.
+
+### 2. Récupérer les Ratings d'un Film
+
+**Endpoint:** `GET /api/rates/movie/{tmdbId}`
+
+| Paramètre | Type | Défaut | Description |
+|-----------|------|--------|-------------|
+| `tmdbId` | number (path) | - | ID TMDb du film |
+| `page` | number | 1 | Numéro de page |
+| `size` | number | 10 | Nombre de ratings par page |
+
+**Auth:** ❌ Non requise
+
+**Exemple:**
+```http
+GET http://localhost:5050/api/rates/movie/27205?page=1&size=10
+```
+
+**Response (200 OK):**
+```json
+{
+  "tmdbId": 27205,
+  "page": 1,
+  "totalPages": 3,
+  "totalResults": 25,
+  "averageScore": 8.4,
+  "ratings": [
+    {
+      "score": 9,
+      "comment": "Un chef-d'œuvre absolu de Christopher Nolan !",
+      "createdAt": "2026-01-08T15:30:00.000Z"
+    },
+    {
+      "score": 8,
+      "comment": null,
+      "createdAt": "2026-01-07T10:15:00.000Z"
+    }
+  ]
+}
+```
 
 ---
 
@@ -1065,6 +1151,21 @@ export interface FollowStatus {
   following: boolean;
 }
 
+export interface UserSuggestion {
+  id: string;
+  username: string;
+  followersCount: number;
+  ratingsCount: number;
+  watchlistCount: number;
+}
+
+export interface UserSuggestionsPage {
+  page: number;
+  totalPages: number;
+  totalResults: number;
+  users: UserSuggestion[];
+}
+
 // ===========================================
 // RATING INTERFACES
 // ===========================================
@@ -1077,6 +1178,21 @@ export interface RateRequest {
 
 export interface RateResponse {
   score: number;
+}
+
+export interface MovieRating {
+  score: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface MovieRatingsPage {
+  tmdbId: number;
+  page: number;
+  totalPages: number;
+  totalResults: number;
+  averageScore: number | null;
+  ratings: MovieRating[];
 }
 
 // ===========================================
@@ -1502,6 +1618,7 @@ export class TmdbImageUtil {
 | `/api/users/{id}` | GET | ✅ | Info utilisateur |
 | `/api/users/profile` | GET | ✅ | Mon profil avec statistiques |
 | `/api/users/profile/{userId}` | GET | ✅ | Profil utilisateur avec stats |
+| `/api/users/discover` | GET | ✅ | **Nouveau** - Utilisateurs suggérés à suivre |
 | `/api/users/watchlist` | GET | ✅ | Ma watchlist |
 | `/api/users/watchlist/{tmdbId}` | POST | ✅ | Ajouter à watchlist |
 | `/api/users/watchlist/{tmdbId}` | DELETE | ✅ | Retirer de watchlist |
@@ -1511,6 +1628,7 @@ export class TmdbImageUtil {
 | `/api/users/followers` | GET | ✅ | Mes abonnés |
 | `/api/users/following/{userId}` | GET | ✅ | Vérifie si on suit |
 | `/api/rates/` | POST | ✅ | Noter un film (avec commentaire optionnel) |
+| `/api/rates/movie/{tmdbId}` | GET | ❌ | **Nouveau** - Ratings d'un film (paginé) |
 | `/api/recommendations/` | GET | ✅ | Mes recommandations |
 | `/api/recommendations/shared` | GET | ✅ | Films partagés |
 | `/api/recommendations/share` | POST | ✅ | Partager un film (avec message optionnel) |

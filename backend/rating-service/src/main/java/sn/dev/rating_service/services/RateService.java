@@ -1,6 +1,7 @@
 package sn.dev.rating_service.services;
 
 import sn.dev.rating_service.data.entities.Rate;
+import sn.dev.rating_service.web.dto.responses.MovieRatingsPageResponse;
 
 /**
  * Service pour la gestion des notations de films.
@@ -28,4 +29,14 @@ public interface RateService {
      * Supprime la notation d'un utilisateur pour un film.
      */
     void deleteRate(String userId, Long tmdbId);
+
+    /**
+     * Récupère les ratings d'un film avec pagination.
+     * 
+     * @param tmdbId l'ID TMDb du film
+     * @param page numéro de page (1-indexed)
+     * @param size nombre d'éléments par page
+     * @return les ratings paginés
+     */
+    MovieRatingsPageResponse getMovieRatings(Long tmdbId, int page, int size);
 }

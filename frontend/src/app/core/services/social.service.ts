@@ -1,9 +1,10 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { 
-  User, UserProfile, FollowStatus, SharedMovie, ShareRequest 
+  User, UserProfile, FollowStatus, SharedMovie, ShareRequest,
+  UserSuggestionsPage
 } from '../interfaces/movie.interface';
 
 /**
@@ -137,6 +138,47 @@ export class SocialService {
           console.error('Failed to share movie:', error);
           throw error;
         })
+      );
+  }
+
+  /**
+   * Share a movie with multiple friends
+   */
+  shareMovieWithMultiple(tmdbId: number, targetUserIds: string[]): Observable<void[]> {
+    const requests = targetUserIds.map(userId => 
+      this.shareMovie({ targetUserId: userId, tmdbId })
+    );
+    // Execute all share requests in parallel
+    return new Observable(subscriber => {
+      Promise.all(requests.map(req => req.toPromise()))
+        .then(results => {
+          subscriber.next(results as void[]);
+          subscriber.complete();
+        })
+        .catch(error => subscriber.error(error));
+    });
+  }
+
+  // ===========================================
+  // USER DISCOVERY ENDPOINTS
+  // ===========================================
+
+  /**
+   * Discover users to follow (users I'm not following yet)
+   */
+  discoverUsers(page: number = 1, size: number = 10): Observable<UserSuggestionsPage> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<UserSuggestionsPage>(`${this.apiUrl}/api/users/discover`, { params })
+      .pipe(
+        catchError(this.handleError<UserSuggestionsPage>('discoverUsers', {
+          page: 1,
+          totalPages: 0,
+          totalResults: 0,
+          users: []
+        }))
       );
   }
 

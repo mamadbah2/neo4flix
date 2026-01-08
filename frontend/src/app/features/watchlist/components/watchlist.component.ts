@@ -1,10 +1,11 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { SkeletonCardComponent } from '../../../shared/components/skeleton-card/skeleton-card.component';
+import { MovieCardComponent } from '../../../shared/components/movie-card/movie-card.component';
 import { WatchlistService } from '../../../core/services/watchlist.service';
-import { getPosterUrl, getBackdropUrl, getReleaseYear } from '../../../core/interfaces/movie.interface';
+import { Movie, getPosterUrl, getBackdropUrl, getReleaseYear } from '../../../core/interfaces/movie.interface';
 
 @Component({
   selector: 'app-watchlist',
@@ -13,7 +14,8 @@ import { getPosterUrl, getBackdropUrl, getReleaseYear } from '../../../core/inte
     CommonModule,
     RouterModule,
     NavbarComponent,
-    SkeletonCardComponent
+    SkeletonCardComponent,
+    MovieCardComponent
   ],
   templateUrl: './watchlist.component.html',
   styles: [`
@@ -138,8 +140,12 @@ export class WatchlistComponent implements OnInit {
   private readonly router = inject(Router);
   readonly watchlistService = inject(WatchlistService);
   
-  readonly isLoading = signal(true);
   readonly skeletonCount = Array.from({ length: 8 }, (_, i) => i);
+  
+  // Computed signals
+  readonly isLoading = computed(() => this.watchlistService.isLoading() || this.watchlistService.isEnriching());
+  readonly watchlist = computed(() => this.watchlistService.watchlist());
+  readonly isEmpty = computed(() => !this.isLoading() && this.watchlist().length === 0);
   
   // Helper functions
   readonly getPosterUrl = getPosterUrl;
@@ -150,24 +156,20 @@ export class WatchlistComponent implements OnInit {
     this.loadWatchlist();
   }
   
-  private async loadWatchlist(): Promise<void> {
-    this.isLoading.set(true);
-    
-    this.watchlistService.loadWatchlist().subscribe({
-      next: () => {
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.isLoading.set(false);
-      }
-    });
+  private loadWatchlist(): void {
+    this.watchlistService.loadWatchlist().subscribe();
   }
   
   navigateToMovie(tmdbId: number): void {
     this.router.navigate(['/movie', tmdbId]);
   }
   
-  removeFromWatchlist(tmdbId: number): void {
+  removeFromWatchlist(event: Event, tmdbId: number): void {
+    event.stopPropagation();
     this.watchlistService.removeFromWatchlist(tmdbId).subscribe();
+  }
+
+  onMovieClick(movie: Movie): void {
+    // Navigation is handled by movie-card component
   }
 }

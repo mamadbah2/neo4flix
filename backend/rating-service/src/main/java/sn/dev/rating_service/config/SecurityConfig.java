@@ -1,5 +1,6 @@
 package sn.dev.rating_service.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
@@ -11,11 +12,15 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
     
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/api/rates/").authenticated()
+                // Endpoints publics
+                .requestMatchers(HttpMethod.GET, "/api/rates/movie/**").permitAll()
+                // Endpoints authentifiés
+                .requestMatchers(HttpMethod.POST, "/api/rates", "/api/rates/").authenticated()
                 .anyRequest().permitAll()
             )
             // Activer OAuth2 Resource Server avec JWT

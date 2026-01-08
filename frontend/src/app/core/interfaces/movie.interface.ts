@@ -120,6 +120,34 @@ export interface FollowStatus {
 }
 
 // ===========================================
+// USER DISCOVERY INTERFACES (NEW)
+// ===========================================
+
+export interface UserSuggestion {
+  id: string;
+  username: string;
+  followersCount: number;
+  ratingsCount: number;
+  watchlistCount: number;
+}
+
+export interface UserSuggestionsPage {
+  page: number;
+  totalPages: number;
+  totalResults: number;
+  users: UserSuggestion[];
+}
+
+// ===========================================
+// BATCH REQUEST INTERFACE
+// ===========================================
+
+export interface BatchMoviesRequest {
+  tmdbIds: number[];
+  language?: string;
+}
+
+// ===========================================
 // WATCHLIST INTERFACES
 // ===========================================
 

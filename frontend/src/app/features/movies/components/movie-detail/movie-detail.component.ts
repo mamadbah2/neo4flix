@@ -8,12 +8,16 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../../../shared/components/navbar/navbar.component';
 import { MovieRowComponent } from '../../../../shared/components/movie-row/movie-row.component';
+import { SlideInPanelComponent } from '../../../../shared/components/slide-in-panel/slide-in-panel.component';
 import { MovieService } from '../../../../core/services/movie.service';
 import { WatchlistService } from '../../../../core/services/watchlist.service';
 import { RatingService } from '../../../../core/services/rating.service';
+import { RecommendationService } from '../../../../core/services/recommendation.service';
+import { SocialService } from '../../../../core/services/social.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { 
-  Movie, MovieRowConfig, Review,
+  Movie, MovieRowConfig, Review, User,
   getBackdropUrl, getReleaseYear, getYouTubeVideoId,
   getPosterUrl
 } from '../../../../core/interfaces/movie.interface';
@@ -42,7 +46,7 @@ declare global {
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, NavbarComponent, MovieRowComponent],
+  imports: [CommonModule, RouterLink, FormsModule, NavbarComponent, MovieRowComponent, SlideInPanelComponent],
   templateUrl: './movie-detail.component.html',
   styles: [`
     :host {
@@ -93,6 +97,9 @@ export class MovieDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly movieService = inject(MovieService);
   private readonly watchlistService = inject(WatchlistService);
   private readonly ratingService = inject(RatingService);
+  private readonly recommendationService = inject(RecommendationService);
+  private readonly socialService = inject(SocialService);
+  private readonly toastService = inject(ToastService);
   readonly authService = inject(AuthService);
 
   // State signals
@@ -112,6 +119,17 @@ export class MovieDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly userRating = signal(7);
   readonly userComment = signal('');
   readonly isSubmittingReview = signal(false);
+
+  // Share panel state
+  readonly showSharePanel = signal(false);
+  readonly friends = signal<User[]>([]);
+  readonly selectedFriends = signal<Set<string>>(new Set());
+  readonly isLoadingFriends = signal(false);
+  readonly isSharingMovie = signal(false);
+
+  // Personalized recommendations state
+  readonly personalizedRecommendations = signal<Movie[]>([]);
+  readonly hasPersonalizedRecommendations = signal(false);
 
   // Computed values
   readonly videoId = computed(() => getYouTubeVideoId(this.movie()?.trailerUrl));
@@ -174,6 +192,8 @@ export class MovieDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showVideo.set(false);
     this.reviews.set([]);
     this.reviewsPage.set(1);
+    this.personalizedRecommendations.set([]);
+    this.hasPersonalizedRecommendations.set(false);
     
     this.movieService.getMovieDetails(tmdbId).subscribe(movie => {
       this.movie.set(movie);
@@ -198,10 +218,40 @@ export class MovieDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         // Load reviews
         this.loadReviews(tmdbId);
         
+        // Load personalized recommendations if logged in
+        if (this.authService.isAuthenticated()) {
+          this.loadPersonalizedRecommendations();
+        }
+        
         // Schedule video playback if trailer exists
         if (this.videoId() && this.isBrowser) {
           this.scheduleVideoPlayback();
         }
+      }
+    });
+  }
+
+  /**
+   * Load personalized recommendations
+   */
+  private loadPersonalizedRecommendations(): void {
+    this.recommendationService.getRecommendations().subscribe(recommendations => {
+      if (recommendations && recommendations.length > 0) {
+        // Convert MovieRecommendation to Movie format
+        const movies: Movie[] = recommendations.map(rec => ({
+          tmdbId: rec.tmdbId,
+          title: rec.title,
+          overview: rec.overview,
+          posterPath: rec.posterPath,
+          backdropPath: rec.backdropPath || null,
+          releaseDate: rec.releaseDate || '',
+          voteAverage: rec.voteAverage,
+          voteCount: 0,
+          popularity: 0,
+          genres: rec.genres
+        }));
+        this.personalizedRecommendations.set(movies);
+        this.hasPersonalizedRecommendations.set(true);
       }
     });
   }
@@ -403,5 +453,104 @@ export class MovieDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       month: 'long',
       year: 'numeric'
     });
+  }
+
+  // ===========================================
+  // SHARE FUNCTIONALITY
+  // ===========================================
+
+  /**
+   * Open share panel and load friends
+   */
+  openSharePanel(): void {
+    this.showSharePanel.set(true);
+    this.selectedFriends.set(new Set());
+    this.loadFriends();
+  }
+
+  /**
+   * Close share panel
+   */
+  closeSharePanel(): void {
+    this.showSharePanel.set(false);
+    this.selectedFriends.set(new Set());
+  }
+
+  /**
+   * Load friends list
+   */
+  private loadFriends(): void {
+    this.isLoadingFriends.set(true);
+    this.socialService.getFollowing().subscribe({
+      next: (users) => {
+        this.friends.set(users);
+        this.isLoadingFriends.set(false);
+      },
+      error: () => {
+        this.isLoadingFriends.set(false);
+      }
+    });
+  }
+
+  /**
+   * Toggle friend selection
+   */
+  toggleFriendSelection(userId: string): void {
+    this.selectedFriends.update(current => {
+      const newSet = new Set(current);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  }
+
+  /**
+   * Check if a friend is selected
+   */
+  isFriendSelected(userId: string): boolean {
+    return this.selectedFriends().has(userId);
+  }
+
+  /**
+   * Share movie with selected friends
+   */
+  shareWithFriends(): void {
+    const m = this.movie();
+    const selectedIds = Array.from(this.selectedFriends());
+    
+    if (!m || selectedIds.length === 0) return;
+    
+    this.isSharingMovie.set(true);
+    
+    // Share with each selected friend
+    const sharePromises = selectedIds.map(userId => 
+      this.socialService.shareMovie({ targetUserId: userId, tmdbId: m.tmdbId }).toPromise()
+    );
+    
+    Promise.all(sharePromises)
+      .then(() => {
+        this.isSharingMovie.set(false);
+        this.closeSharePanel();
+        const count = selectedIds.length;
+        this.toastService.success(
+          count === 1 
+            ? `${m.title} partagé avec 1 ami` 
+            : `${m.title} partagé avec ${count} amis`
+        );
+      })
+      .catch(() => {
+        this.isSharingMovie.set(false);
+        this.toastService.error('Erreur lors du partage. Veuillez réessayer.');
+      });
+  }
+
+  /**
+   * Get avatar URL for user
+   */
+  getAvatarUrl(seed: string): string {
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
   }
 }

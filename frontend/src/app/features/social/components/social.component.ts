@@ -1,11 +1,14 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
+import { SlideInPanelComponent } from '../../../shared/components/slide-in-panel/slide-in-panel.component';
 import { SocialService } from '../../../core/services/social.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { 
-  SharedMovie, 
+  SharedMovie, UserSuggestion,
   getPosterUrl, getBackdropUrl 
 } from '../../../core/interfaces/movie.interface';
 
@@ -15,7 +18,7 @@ import {
 @Component({
   selector: 'app-social',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavbarComponent],
+  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent, SlideInPanelComponent],
   templateUrl: './social.component.html',
   styles: [`
     :host {
@@ -40,6 +43,7 @@ import {
 })
 export class SocialComponent implements OnInit {
   private readonly socialService = inject(SocialService);
+  private readonly toastService = inject(ToastService);
   readonly authService = inject(AuthService);
   
   // Loading states
@@ -55,6 +59,27 @@ export class SocialComponent implements OnInit {
   
   // Featured shared movie
   readonly featuredMovie = signal<SharedMovie | null>(null);
+
+  // User discovery panel state
+  readonly showDiscoverPanel = signal(false);
+  readonly discoverUsers = signal<UserSuggestion[]>([]);
+  readonly isLoadingDiscover = signal(false);
+  readonly discoverPage = signal(1);
+  readonly discoverTotalPages = signal(0);
+  readonly hasMoreUsers = signal(false);
+  readonly followingInProgress = signal<Set<string>>(new Set());
+  readonly searchQuery = signal('');
+
+  // Filtered users based on search
+  readonly filteredUsers = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) {
+      return this.discoverUsers();
+    }
+    return this.discoverUsers().filter(user => 
+      user.username.toLowerCase().includes(query)
+    );
+  });
 
   ngOnInit(): void {
     this.loadData();
@@ -121,5 +146,106 @@ export class SocialComponent implements OnInit {
     } else {
       return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     }
+  }
+
+  // ===========================================
+  // USER DISCOVERY PANEL
+  // ===========================================
+
+  /**
+   * Open the discover users panel
+   */
+  openDiscoverPanel(): void {
+    this.showDiscoverPanel.set(true);
+    this.discoverPage.set(1);
+    this.discoverUsers.set([]);
+    this.searchQuery.set('');
+    this.loadDiscoverUsers();
+  }
+
+  /**
+   * Close the discover panel
+   */
+  closeDiscoverPanel(): void {
+    this.showDiscoverPanel.set(false);
+    this.discoverUsers.set([]);
+    this.searchQuery.set('');
+  }
+
+  /**
+   * Load users to discover
+   */
+  private loadDiscoverUsers(append = false): void {
+    this.isLoadingDiscover.set(true);
+
+    this.socialService.discoverUsers(this.discoverPage(), 15).subscribe({
+      next: (response) => {
+        if (append) {
+          this.discoverUsers.update(current => [...current, ...response.users]);
+        } else {
+          this.discoverUsers.set(response.users);
+        }
+        this.discoverTotalPages.set(response.totalPages);
+        this.hasMoreUsers.set(this.discoverPage() < response.totalPages);
+        this.isLoadingDiscover.set(false);
+      },
+      error: () => {
+        this.isLoadingDiscover.set(false);
+      }
+    });
+  }
+
+  /**
+   * Load more users
+   */
+  loadMoreUsers(): void {
+    if (this.hasMoreUsers() && !this.isLoadingDiscover()) {
+      this.discoverPage.update(p => p + 1);
+      this.loadDiscoverUsers(true);
+    }
+  }
+
+  /**
+   * Follow a user from the discover panel (optimistic UI)
+   */
+  followFromDiscover(user: UserSuggestion): void {
+    // Mark as in progress
+    this.followingInProgress.update(set => {
+      const newSet = new Set(set);
+      newSet.add(user.id);
+      return newSet;
+    });
+
+    // Optimistically remove from list
+    this.discoverUsers.update(users => users.filter(u => u.id !== user.id));
+
+    this.socialService.followUser(user.id).subscribe({
+      next: () => {
+        // Remove from in progress
+        this.followingInProgress.update(set => {
+          const newSet = new Set(set);
+          newSet.delete(user.id);
+          return newSet;
+        });
+        this.toastService.success(`Vous suivez maintenant ${user.username}`);
+      },
+      error: () => {
+        // Rollback - add user back to list
+        this.discoverUsers.update(users => [user, ...users]);
+        this.followingInProgress.update(set => {
+          const newSet = new Set(set);
+          newSet.delete(user.id);
+          return newSet;
+        });
+        this.toastService.error('Erreur lors du follow. Veuillez réessayer.');
+      }
+    });
+  }
+
+  /**
+   * Check if a user is being followed (in progress)
+   */
+  isFollowingInProgress(userId: string): boolean {
+    return this.followingInProgress().has(userId);
   }
 }

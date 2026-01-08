@@ -1,12 +1,23 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of, map } from 'rxjs';
+import { Observable, tap, catchError, of, map, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { WatchlistItem, Movie } from '../interfaces/movie.interface';
+import { WatchlistItem, Movie, BatchMoviesRequest } from '../interfaces/movie.interface';
+
+/**
+ * Minimal watchlist response from backend (just tmdbId)
+ */
+interface WatchlistResponse {
+  tmdbId: number;
+}
 
 /**
  * WatchlistService - Manages user's watchlist
  * All endpoints require authentication
+ * 
+ * Flow:
+ * 1. GET /api/users/watchlist returns only tmdbIds
+ * 2. POST /api/movies/batch enriches with full movie data
  */
 @Injectable({
   providedIn: 'root'
@@ -14,15 +25,18 @@ import { WatchlistItem, Movie } from '../interfaces/movie.interface';
 export class WatchlistService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/api/users/watchlist`;
+  private readonly moviesApiUrl = `${environment.apiUrl}/api/movies`;
 
   // Signal-based state
-  private readonly _watchlist = signal<WatchlistItem[]>([]);
+  private readonly _watchlist = signal<Movie[]>([]);
   private readonly _isLoading = signal<boolean>(false);
   private readonly _isLoaded = signal<boolean>(false);
+  private readonly _isEnriching = signal<boolean>(false);
 
   // Public readonly signals
   readonly watchlist = this._watchlist.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();
+  readonly isEnriching = this._isEnriching.asReadonly();
   readonly count = computed(() => this._watchlist().length);
 
   /**
@@ -40,9 +54,9 @@ export class WatchlistService {
   }
 
   /**
-   * Load watchlist from API
+   * Load watchlist from API and enrich with /batch
    */
-  loadWatchlist(): Observable<WatchlistItem[]> {
+  loadWatchlist(): Observable<Movie[]> {
     // Don't reload if already loaded
     if (this._isLoaded()) {
       return of(this._watchlist());
@@ -50,16 +64,66 @@ export class WatchlistService {
 
     this._isLoading.set(true);
 
-    return this.http.get<WatchlistItem[]>(this.apiUrl).pipe(
-      tap(items => {
-        this._watchlist.set(items);
+    return this.http.get<WatchlistResponse[]>(this.apiUrl).pipe(
+      switchMap(items => {
+        if (!items || items.length === 0) {
+          this._watchlist.set([]);
+          this._isLoaded.set(true);
+          this._isLoading.set(false);
+          return of([]);
+        }
+
+        // Extract tmdbIds
+        const tmdbIds = items.map(item => item.tmdbId);
+        
+        // Enrich with batch endpoint
+        this._isEnriching.set(true);
+        return this.enrichMovies(tmdbIds);
+      }),
+      tap(movies => {
+        this._watchlist.set(movies);
         this._isLoaded.set(true);
         this._isLoading.set(false);
+        this._isEnriching.set(false);
       }),
       catchError(error => {
         console.error('Failed to load watchlist:', error);
         this._isLoading.set(false);
+        this._isEnriching.set(false);
         return of([]);
+      })
+    );
+  }
+
+  /**
+   * Enrich movie IDs with full movie data via /batch endpoint
+   */
+  private enrichMovies(tmdbIds: number[]): Observable<Movie[]> {
+    if (tmdbIds.length === 0) {
+      return of([]);
+    }
+
+    const request: BatchMoviesRequest = {
+      tmdbIds,
+      language: 'fr-FR'
+    };
+
+    return this.http.post<Movie[]>(`${this.moviesApiUrl}/batch`, request).pipe(
+      catchError(error => {
+        console.error('Failed to enrich movies:', error);
+        // Return minimal data as fallback
+        return of(tmdbIds.map(id => ({
+          tmdbId: id,
+          title: 'Chargement...',
+          overview: '',
+          posterPath: null,
+          backdropPath: null,
+          releaseDate: '',
+          voteAverage: 0,
+          voteCount: 0,
+          popularity: 0,
+          genres: []
+        })));
       })
     );
   }
@@ -67,7 +131,7 @@ export class WatchlistService {
   /**
    * Force reload watchlist
    */
-  refreshWatchlist(): Observable<WatchlistItem[]> {
+  refreshWatchlist(): Observable<Movie[]> {
     this._isLoaded.set(false);
     return this.loadWatchlist();
   }
@@ -84,8 +148,20 @@ export class WatchlistService {
 
     return this.http.post<WatchlistItem>(`${this.apiUrl}/${tmdbId}`, {}).pipe(
       tap(item => {
-        // Add to local state
-        this._watchlist.update(list => [...list, item]);
+        // Add to local state (minimal data for now, will be enriched on next full load)
+        const movieItem: Movie = {
+          tmdbId: item.tmdbId,
+          title: item.title || 'Film',
+          overview: '',
+          posterPath: item.posterPath || null,
+          backdropPath: item.backdropPath || null,
+          releaseDate: item.releaseDate || '',
+          voteAverage: item.voteAverage || 0,
+          voteCount: 0,
+          popularity: 0,
+          genres: item.genres || []
+        };
+        this._watchlist.update(list => [...list, movieItem]);
       }),
       catchError(error => {
         console.error('Failed to add to watchlist:', error);
@@ -100,24 +176,12 @@ export class WatchlistService {
   addMovieToWatchlist(movie: Movie): Observable<WatchlistItem | null> {
     // Optimistic update with movie data
     if (!this.isInWatchlist(movie.tmdbId)) {
-      const optimisticItem: WatchlistItem = {
-        tmdbId: movie.tmdbId,
-        title: movie.title,
-        posterPath: movie.posterPath,
-        backdropPath: movie.backdropPath,
-        releaseDate: movie.releaseDate,
-        voteAverage: movie.voteAverage,
-        genres: movie.genres
-      };
-      this._watchlist.update(list => [...list, optimisticItem]);
+      this._watchlist.update(list => [...list, movie]);
     }
 
     return this.http.post<WatchlistItem>(`${this.apiUrl}/${movie.tmdbId}`, {}).pipe(
-      tap(item => {
-        // Update with server response
-        this._watchlist.update(list => 
-          list.map(i => i.tmdbId === item.tmdbId ? item : i)
-        );
+      tap(() => {
+        // Already added optimistically, no need to update again
       }),
       catchError(error => {
         console.error('Failed to add to watchlist:', error);

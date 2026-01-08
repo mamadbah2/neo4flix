@@ -226,12 +226,12 @@ Content-Type: application/json
 
 ### 10.1 Noter un film avec commentaire
 POST {{baseUrl}}/api/rates/
-Authorization: Bearer {{tokenUserA}}
+Authorization: Bearer {{tokenUserB}}
 Content-Type: application/json
 
 {
   "tmdbId": {{tmdbId}},
-  "score": 9,
+  "score": 5,
   "comment": "Un chef-d'œuvre absolu de Christopher Nolan !"
 }
 
@@ -244,6 +244,28 @@ Content-Type: application/json
   "tmdbId": {{tmdbId}},
   "score": 8
 }
+
+###############################################################################
+# ÉTAPE 11 : RATINGS D'UN FILM (NOUVEAU)
+###############################################################################
+
+### 11.1 Récupérer les ratings d'un film (paginé) - Endpoint public
+GET {{baseUrl}}/api/rates/movie/{{tmdbId}}?page=1&size=10
+
+### 11.2 Récupérer les ratings avec pagination page 2
+GET {{baseUrl}}/api/rates/movie/{{tmdbId}}?page=2&size=5
+
+###############################################################################
+# ÉTAPE 12 : DÉCOUVERTE D'UTILISATEURS (NOUVEAU)
+###############################################################################
+
+### 12.1 Découvrir des utilisateurs à suivre (paginé, tri aléatoire)
+GET {{baseUrl}}/api/users/discover?page=1&size=10
+Authorization: Bearer {{tokenUserA}}
+
+### 12.2 Découvrir des utilisateurs - Page 2
+GET {{baseUrl}}/api/users/discover?page=2&size=5
+Authorization: Bearer {{tokenUserB}}
 
 ###############################################################################
 # BONUS : REFRESH TOKENS
