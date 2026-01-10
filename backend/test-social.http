@@ -21,10 +21,42 @@
 @tokenUserB = {{loginUserB.response.body.access_token}}
 @refreshTokenA = {{loginUserA.response.body.refresh_token}}
 @refreshTokenB = {{loginUserB.response.body.refresh_token}}
+@administratorToken = {{adminToken.response.body.access_token}}
 
 # IDs utilisateurs (récupérés via /me)
 @userAId = {{getUserA.response.body.id}}
 @userBId = {{getUserB.response.body.id}}
+
+###############################################################################
+# ÉTAPE 0 : REGISTRATION DES UTILISATEURS (SI NÉCESSAIRE)
+###############################################################################
+
+### 1. Get Access Token
+# @name adminToken
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id=neo4flix-app&client_secret=x4I746Xkmejuj7zi7AC4WJh1DPk97Tyu
+
+### 2. Register New User
+POST http://keycloak4flix.duckdns.org/admin/realms/neo4flix/users
+Authorization: Bearer {{administratorToken}}
+Content-Type: application/json
+
+{
+  "username": "annndiaye",
+  "email": "annndiaye@gmail.com",
+  "enabled": true,
+  "firstName": "Anna",
+  "lastName": "Ndiaye",
+  "credentials": [
+    {
+      "type": "password",
+      "value": "password123",
+      "temporary": false
+    }
+  ]
+}
 
 ###############################################################################
 # ÉTAPE 1 : AUTHENTIFICATION
@@ -126,7 +158,7 @@ Authorization: Bearer {{tokenUserB}}
 
 ### 5.2 User B récupère uniquement les films partagés par ses amis
 GET {{baseUrl}}/api/recommendations/shared
-Authorization: Bearer {{tokenUserB}}
+Authorization: Bearer {{tokenUserA}}
 
 ###############################################################################
 # ÉTAPE 6 : TESTS D'ERREURS

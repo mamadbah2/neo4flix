@@ -1,10 +1,10 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, of, tap } from 'rxjs';
+import { Observable, catchError, of, tap, switchMap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { 
   User, UserProfile, FollowStatus, SharedMovie, ShareRequest,
-  UserSuggestionsPage
+  UserSuggestionsPage, Movie
 } from '../interfaces/movie.interface';
 
 /**
@@ -119,11 +119,57 @@ export class SocialService {
 
   /**
    * Get movies shared with me by friends
+   * Enriches the data via batch endpoint to get full movie details
    */
   getSharedMovies(): Observable<SharedMovie[]> {
     return this.http.get<SharedMovie[]>(`${this.apiUrl}/api/recommendations/shared`)
       .pipe(
-        tap(movies => this.sharedMovies.set(movies)),
+        switchMap(movies => {
+          if (!movies || movies.length === 0) {
+            this.sharedMovies.set([]);
+            return of([]);
+          }
+          
+          // Extract TMDb IDs for batch enrichment
+          const tmdbIds = movies.map(m => m.tmdbId);
+          
+          // Call batch endpoint to get full movie details
+          return this.http.post<Movie[]>(
+            `${this.apiUrl}/api/movies/batch`,
+            { tmdbIds, language: 'fr-FR' }
+          ).pipe(
+            map(enrichedMovies => {
+              // Create a map for quick lookup
+              const movieMap = new Map<number, Movie>();
+              enrichedMovies.forEach(m => movieMap.set(m.tmdbId, m));
+              
+              // Merge enriched data with shared movie info
+              const enrichedSharedMovies: SharedMovie[] = movies.map(shared => {
+                const enriched = movieMap.get(shared.tmdbId);
+                if (enriched) {
+                  return {
+                    ...shared,
+                    overview: enriched.overview || shared.overview,
+                    posterPath: enriched.posterPath || shared.posterPath,
+                    backdropPath: enriched.backdropPath || shared.backdropPath,
+                    voteAverage: enriched.voteAverage ?? shared.voteAverage,
+                    genres: enriched.genres || shared.genres,
+                    releaseDate: enriched.releaseDate || shared.releaseDate
+                  };
+                }
+                return shared;
+              });
+              
+              this.sharedMovies.set(enrichedSharedMovies);
+              return enrichedSharedMovies;
+            }),
+            catchError(() => {
+              // If batch fails, return original data
+              this.sharedMovies.set(movies);
+              return of(movies);
+            })
+          );
+        }),
         catchError(this.handleError<SharedMovie[]>('getSharedMovies', []))
       );
   }

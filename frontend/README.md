@@ -126,7 +126,7 @@ src/
 | **Framework** | Angular 21 (Standalone Components) |
 | **State** | Angular Signals (reactive, no NgRx needed) |
 | **Styling** | Tailwind CSS 4.1 (dark mode, mobile-first) |
-| **Auth** | Keycloak OIDC (password grant + refresh tokens) |
+| **Auth** | Keycloak OIDC + PKCE with 2FA support |
 | **HTTP** | Angular HttpClient with interceptors |
 | **Testing** | Vitest |
 | **SSR** | Angular SSR with hydration |
@@ -268,8 +268,38 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📚 Additional Resources
 
 - [API Documentation](./FRONTEND_API_DOCUMENTATION.md) - Full backend API reference
+- [2FA Implementation](./2FA_implementation.md) - Keycloak 2FA setup guide
 - [Copilot Resume](./copilot_resume.md) - Project context for AI assistants
 - [Template Files](./template/) - HTML design references
+
+---
+
+## 🔐 Authentication Flow
+
+Neo4flix uses **Keycloak** with **Authorization Code + PKCE** flow for secure authentication with 2FA support:
+
+1. **User clicks Login** → Redirects to Keycloak
+2. **Keycloak handles** → Username/password + OTP (if 2FA enabled)
+3. **Success** → Redirects back to Neo4flix with tokens
+4. **App syncs** → Calls `/api/users/me` to sync user with Neo4j
+
+### Key Features
+
+- ✅ **2FA Ready** - TOTP support via Keycloak
+- ✅ **Silent SSO** - Automatic login if session exists
+- ✅ **Auto Refresh** - Tokens refreshed before expiry
+- ✅ **Secure Storage** - Tokens managed by Keycloak JS
+
+### Registration
+
+Users are registered via Keycloak Admin API:
+
+```typescript
+// AuthService.register() flow
+1. Get admin token (client_credentials grant)
+2. POST user to /admin/realms/neo4flix/users
+3. Redirect to login on success
+```
 
 ---
 

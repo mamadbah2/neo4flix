@@ -204,25 +204,23 @@ export class LoginComponent {
     return !!(field && field.invalid && (field.dirty || field.touched || this.submitted));
   }
 
+  /**
+   * Submit form - redirect to Keycloak for login (supports 2FA)
+   */
   onSubmit(): void {
-    this.submitted = true;
-    this.authService.clearError();
-
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      return;
-    }
-
-    const { username, password } = this.loginForm.value;
-
-    this.authService.login({ username, password }).subscribe({
-      next: () => {
-        // Navigate to the stored return URL or /home
-        this.authService.navigateToReturnUrl();
-      },
+    // Redirect to Keycloak login page
+    // Keycloak handles username/password + 2FA (OTP)
+    this.authService.login().subscribe({
       error: () => {
-        // Error is already handled by AuthService and displayed in template
+        // Error is already handled by AuthService
       }
     });
+  }
+
+  /**
+   * Direct login button click - same as form submit
+   */
+  onLoginClick(): void {
+    this.onSubmit();
   }
 }

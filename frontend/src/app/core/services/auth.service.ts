@@ -1,33 +1,26 @@
 import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
+import { Observable, throwError, of, from } from 'rxjs';
 import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
+import { KeycloakService } from 'keycloak-angular';
 import { environment } from '../../../environments/environment';
 import {
-  LoginRequest,
   RegisterRequest,
   TokenResponse,
-  User,
-  DecodedToken,
-  AuthState,
-  KeycloakError,
-  getAuthErrorMessage
+  User
 } from '../interfaces/auth.interface';
 
 const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'neo4flix_access_token',
-  REFRESH_TOKEN: 'neo4flix_refresh_token',
-  EXPIRES_AT: 'neo4flix_expires_at',
-  REFRESH_EXPIRES_AT: 'neo4flix_refresh_expires_at', // For 2-week session persistence
-  USER: 'neo4flix_user',
-  RETURN_URL: 'neo4flix_return_url'
+  RETURN_URL: 'neo4flix_return_url',
+  USER: 'neo4flix_user'
 } as const;
 
-// 2 weeks in milliseconds (Keycloak default SSO session max)
-const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
-
+/**
+ * AuthService - Keycloak-based authentication with 2FA support
+ * Uses Authorization Code + PKCE flow via keycloak-angular
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -35,6 +28,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly keycloakService = inject(KeycloakService);
 
   // Signal-based state management
   private readonly _isAuthenticated = signal<boolean>(false);
@@ -50,104 +44,174 @@ export class AuthService {
 
   // Computed signals
   readonly username = computed(() => this._user()?.username ?? null);
-  readonly isLoggedIn = computed(() => this._isAuthenticated() && !!this.getAccessToken());
-
-  // For token refresh synchronization
-  private refreshTokenInProgress = false;
-  private refreshTokenSubject = new BehaviorSubject<string | null>(null);
+  readonly isLoggedIn = computed(() => {
+    try {
+      return this._isAuthenticated() && this.keycloakService.isLoggedIn();
+    } catch {
+      return this._isAuthenticated();
+    }
+  });
 
   constructor() {
     this.initializeAuthState();
   }
 
   /**
-   * Initialize auth state from localStorage on app startup
-   * Supports 2-week session persistence via refresh token
+   * Initialize auth state from Keycloak on app startup
    */
   private initializeAuthState(): void {
     if (!this.isBrowser()) return;
 
-    const token = this.getAccessToken();
-    const expiresAt = this.getExpiresAt();
-    const refreshExpiresAt = this.getRefreshExpiresAt();
+    try {
+      const isLoggedIn = this.keycloakService.isLoggedIn();
+      this._isAuthenticated.set(isLoggedIn);
 
-    // Check if access token is valid
-    if (token && expiresAt && Date.now() < expiresAt) {
-      this._isAuthenticated.set(true);
-      this._user.set(this.getStoredUser());
-    } 
-    // If access token expired but refresh token is still valid (within 2 weeks)
-    else if (this.getRefreshToken() && refreshExpiresAt && Date.now() < refreshExpiresAt) {
-      // Attempt to refresh the token silently
-      this.refreshToken().subscribe({
-        next: () => {
-          this._isAuthenticated.set(true);
-          this._user.set(this.getStoredUser());
-        },
-        error: () => {
-          this.clearAuthData();
-        }
-      });
-    } else {
-      this.clearAuthData();
+      if (isLoggedIn) {
+        this.loadUserProfile();
+      }
+    } catch {
+      // Keycloak not ready yet - will be checked later
     }
   }
 
   /**
-   * Login with username and password (Keycloak password grant)
-   * After successful authentication, syncs user with backend via /api/users/me
+   * Load user profile from Keycloak token
    */
-  login(credentials: LoginRequest): Observable<TokenResponse> {
+  private loadUserProfile(): void {
+    if (!this.isBrowser()) return;
+
+    try {
+      const keycloakInstance = this.keycloakService.getKeycloakInstance();
+      if (keycloakInstance.tokenParsed) {
+        const tokenParsed = keycloakInstance.tokenParsed as Record<string, unknown>;
+        const user: User = {
+          id: tokenParsed['sub'] as string,
+          username: tokenParsed['preferred_username'] as string,
+          email: tokenParsed['email'] as string || '',
+          firstName: tokenParsed['given_name'] as string,
+          lastName: tokenParsed['family_name'] as string
+        };
+        this._user.set(user);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+
+        // Sync with backend
+        this.syncUserWithBackend().subscribe();
+      }
+    } catch (error) {
+      console.error('Failed to load user profile:', error);
+    }
+  }
+
+  /**
+   * Login by redirecting to Keycloak login page
+   * Keycloak handles password + 2FA (OTP) flow
+   */
+  login(): Observable<void> {
     this._isLoading.set(true);
     this._error.set(null);
 
-    const body = new URLSearchParams();
-    body.set('grant_type', 'password');
-    body.set('client_id', environment.keycloak.clientId);
-    body.set('username', credentials.username);
-    body.set('password', credentials.password);
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded'
-    });
-
-    return this.http.post<TokenResponse>(
-      environment.keycloak.tokenEndpoint,
-      body.toString(),
-      { headers }
-    ).pipe(
-      tap(response => {
-        this.handleAuthSuccess(response);
-      }),
-      // After successful Keycloak auth, sync user with backend
-      switchMap(response => {
-        return this.syncUserWithBackend().pipe(
-          map(() => response),
-          catchError(() => {
-            // Continue even if backend sync fails - user is authenticated
-            console.warn('Backend user sync failed, continuing with Keycloak data');
-            return of(response);
-          })
-        );
-      }),
+    const returnUrl = this.getReturnUrl() || '/home';
+    
+    return from(this.keycloakService.login({
+      redirectUri: window.location.origin + returnUrl
+    })).pipe(
       tap(() => {
         this._isLoading.set(false);
       }),
       catchError(error => {
         this._isLoading.set(false);
-        return this.handleAuthError(error);
+        this._error.set('Erreur de connexion. Veuillez réessayer.');
+        return throwError(() => error);
       })
     );
   }
 
   /**
-   * Sync user with backend by calling /api/users/me
-   * This ensures the user exists in Neo4j and returns fresh user data
+   * Register a new user via Keycloak Admin API
+   */
+  register(request: RegisterRequest): Observable<{ success: boolean; message: string }> {
+    this._isLoading.set(true);
+    this._error.set(null);
+
+    const tokenBody = new URLSearchParams();
+    tokenBody.set('grant_type', 'client_credentials');
+    tokenBody.set('client_id', environment.keycloak.clientId);
+    tokenBody.set('client_secret', environment.keycloak.clientSecret);
+
+    const tokenHeaders = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded'
+    });
+
+    return this.http.post<TokenResponse>(
+      environment.keycloak.tokenEndpoint,
+      tokenBody.toString(),
+      { headers: tokenHeaders }
+    ).pipe(
+      switchMap(tokenResponse => {
+        const userPayload = {
+          username: request.username,
+          email: request.email,
+          enabled: true,
+          firstName: request.firstName || '',
+          lastName: request.lastName || '',
+          credentials: [
+            {
+              type: 'password',
+              value: request.password,
+              temporary: false
+            }
+          ]
+        };
+
+        const createHeaders = new HttpHeaders({
+          'Authorization': 'Bearer ' + tokenResponse.access_token,
+          'Content-Type': 'application/json'
+        });
+
+        return this.http.post(
+          environment.keycloak.adminUrl + '/users',
+          userPayload,
+          { headers: createHeaders, observe: 'response' }
+        );
+      }),
+      map(response => {
+        this._isLoading.set(false);
+        if (response.status === 201) {
+          return {
+            success: true,
+            message: 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.'
+          };
+        }
+        return {
+          success: false,
+          message: 'Erreur inattendue lors de la création du compte.'
+        };
+      }),
+      catchError((error: HttpErrorResponse) => {
+        this._isLoading.set(false);
+        
+        let message = 'Erreur lors de la création du compte.';
+        
+        if (error.status === 409) {
+          message = 'Ce nom d\'utilisateur ou cette adresse e-mail est déjà utilisé.';
+        } else if (error.status === 400) {
+          message = 'Données invalides. Vérifiez vos informations.';
+        } else if (error.status === 401 || error.status === 403) {
+          message = 'Erreur d\'authentification du service.';
+        }
+        
+        this._error.set(message);
+        return throwError(() => new Error(message));
+      })
+    );
+  }
+
+  /**
+   * Sync user with backend
    */
   syncUserWithBackend(): Observable<User> {
-    return this.http.get<User>(`${environment.apiUrl}/api/users/me`).pipe(
+    return this.http.get<User>(environment.apiUrl + '/api/users/me').pipe(
       tap(user => {
-        // Update local user state with backend response
         this._user.set(user);
         if (this.isBrowser()) {
           localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
@@ -161,49 +225,19 @@ export class AuthService {
   }
 
   /**
-   * Refresh the access token using refresh token
+   * Refresh the access token
    */
-  refreshToken(): Observable<TokenResponse> {
-    const refreshToken = this.getRefreshToken();
-
-    if (!refreshToken) {
-      return throwError(() => new Error('No refresh token available'));
+  refreshToken(): Observable<string> {
+    if (!this.isBrowser()) {
+      return throwError(() => new Error('Not in browser'));
     }
 
-    if (this.refreshTokenInProgress) {
-      return this.refreshTokenSubject.pipe(
-        map(token => {
-          if (!token) throw new Error('Token refresh failed');
-          return { access_token: token } as TokenResponse;
-        })
-      );
-    }
-
-    this.refreshTokenInProgress = true;
-    this.refreshTokenSubject.next(null);
-
-    const body = new URLSearchParams();
-    body.set('grant_type', 'refresh_token');
-    body.set('client_id', environment.keycloak.clientId);
-    body.set('refresh_token', refreshToken);
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded'
-    });
-
-    return this.http.post<TokenResponse>(
-      environment.keycloak.tokenEndpoint,
-      body.toString(),
-      { headers }
-    ).pipe(
-      tap(response => {
-        this.handleAuthSuccess(response);
-        this.refreshTokenInProgress = false;
-        this.refreshTokenSubject.next(response.access_token);
+    return from(this.keycloakService.updateToken(30)).pipe(
+      map(() => {
+        const token = this.keycloakService.getKeycloakInstance().token;
+        return token || '';
       }),
       catchError(error => {
-        this.refreshTokenInProgress = false;
-        this.refreshTokenSubject.next(null);
         this.logout();
         return throwError(() => error);
       })
@@ -211,171 +245,92 @@ export class AuthService {
   }
 
   /**
-   * Logout and clear all auth data
+   * Logout
    */
   logout(): void {
-    this.clearAuthData();
+    if (!this.isBrowser()) return;
+
     this._isAuthenticated.set(false);
     this._user.set(null);
-    this.router.navigate(['/login']);
+    this.clearLocalData();
+    
+    this.keycloakService.logout(window.location.origin + '/login');
   }
 
-  /**
-   * Store the return URL before redirecting to login
-   */
   setReturnUrl(url: string): void {
     if (this.isBrowser()) {
       localStorage.setItem(STORAGE_KEYS.RETURN_URL, url);
     }
   }
 
-  /**
-   * Get and clear the stored return URL
-   */
+  getReturnUrl(): string | null {
+    if (!this.isBrowser()) return null;
+    return localStorage.getItem(STORAGE_KEYS.RETURN_URL);
+  }
+
   getAndClearReturnUrl(): string {
     if (!this.isBrowser()) return '/home';
-
     const url = localStorage.getItem(STORAGE_KEYS.RETURN_URL) || '/home';
     localStorage.removeItem(STORAGE_KEYS.RETURN_URL);
     return url;
   }
 
-  /**
-   * Navigate to the stored return URL after successful login
-   */
   navigateToReturnUrl(): void {
     const returnUrl = this.getAndClearReturnUrl();
     this.router.navigateByUrl(returnUrl);
   }
 
-  /**
-   * Get access token from localStorage
-   */
   getAccessToken(): string | null {
     if (!this.isBrowser()) return null;
-    return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    try {
+      return this.keycloakService.getKeycloakInstance().token || null;
+    } catch {
+      return null;
+    }
   }
 
-  /**
-   * Get refresh token from localStorage
-   */
   getRefreshToken(): string | null {
     if (!this.isBrowser()) return null;
-    return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    try {
+      return this.keycloakService.getKeycloakInstance().refreshToken || null;
+    } catch {
+      return null;
+    }
   }
 
-  /**
-   * Check if token is expired or about to expire (within 30 seconds)
-   */
   isTokenExpired(): boolean {
-    const expiresAt = this.getExpiresAt();
-    if (!expiresAt) return true;
-    return Date.now() >= expiresAt - 30000; // 30 seconds buffer
+    if (!this.isBrowser()) return true;
+    try {
+      return this.keycloakService.isTokenExpired(30);
+    } catch {
+      return true;
+    }
   }
 
-  /**
-   * Clear error state
-   */
   clearError(): void {
     this._error.set(null);
   }
 
-  // ==========================================
-  // PRIVATE METHODS
-  // ==========================================
-
-  private handleAuthSuccess(response: TokenResponse): void {
-    const expiresAt = Date.now() + response.expires_in * 1000;
-    // Set refresh token expiration to 2 weeks from now (or use refresh_expires_in if provided)
-    const refreshExpiresAt = Date.now() + (response.refresh_expires_in 
-      ? response.refresh_expires_in * 1000 
-      : TWO_WEEKS_MS);
-    const user = this.decodeToken(response.access_token);
-
-    if (this.isBrowser()) {
-      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.access_token);
-      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token);
-      localStorage.setItem(STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
-      localStorage.setItem(STORAGE_KEYS.REFRESH_EXPIRES_AT, refreshExpiresAt.toString());
-      if (user) {
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-      }
-    }
-
-    this._isAuthenticated.set(true);
-    this._user.set(user);
-  }
-
-  private handleAuthError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage: string;
-
-    if (error.status === 0) {
-      errorMessage = getAuthErrorMessage('network_error');
-    } else if (error.status >= 500) {
-      errorMessage = getAuthErrorMessage('server_error');
-    } else if (error.error) {
-      const keycloakError = error.error as KeycloakError;
-      errorMessage = getAuthErrorMessage(keycloakError);
-    } else {
-      errorMessage = getAuthErrorMessage('unknown_error');
-    }
-
-    this._error.set(errorMessage);
-    return throwError(() => new Error(errorMessage));
-  }
-
-  private decodeToken(token: string): User | null {
+  hasRole(role: string): boolean {
     try {
-      const payload = token.split('.')[1];
-      const decoded: DecodedToken = JSON.parse(atob(payload));
-
-      return {
-        id: decoded.sub,
-        username: decoded.preferred_username,
-        email: decoded.email || '',
-        firstName: decoded.given_name,
-        lastName: decoded.family_name
-      };
+      return this.keycloakService.isUserInRole(role);
     } catch {
-      return null;
+      return false;
     }
   }
 
-  private getStoredUser(): User | null {
-    if (!this.isBrowser()) return null;
-
-    const userJson = localStorage.getItem(STORAGE_KEYS.USER);
-    if (!userJson) return null;
-
+  getUserRoles(): string[] {
     try {
-      return JSON.parse(userJson);
+      return this.keycloakService.getUserRoles();
     } catch {
-      return null;
+      return [];
     }
   }
 
-  private getExpiresAt(): number | null {
-    if (!this.isBrowser()) return null;
-
-    const expiresAt = localStorage.getItem(STORAGE_KEYS.EXPIRES_AT);
-    return expiresAt ? parseInt(expiresAt, 10) : null;
-  }
-
-  private clearAuthData(): void {
+  private clearLocalData(): void {
     if (!this.isBrowser()) return;
-
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.EXPIRES_AT);
-    localStorage.removeItem(STORAGE_KEYS.REFRESH_EXPIRES_AT);
     localStorage.removeItem(STORAGE_KEYS.USER);
-  }
-
-  private getRefreshExpiresAt(): number | null {
-    if (!this.isBrowser()) return null;
-
-    const refreshExpiresAt = localStorage.getItem(STORAGE_KEYS.REFRESH_EXPIRES_AT);
-    return refreshExpiresAt ? parseInt(refreshExpiresAt, 10) : null;
+    localStorage.removeItem(STORAGE_KEYS.RETURN_URL);
   }
 
   private isBrowser(): boolean {

@@ -399,20 +399,28 @@
               class="w-full accent-[#E50914] cursor-pointer h-2 rounded-lg appearance-none bg-white/10">
           </div>
           
-          <!-- Comment Textarea -->
+          <!-- Comment Textarea (Required) -->
           <textarea 
             rows="4" 
             [ngModel]="userComment()"
             (ngModelChange)="userComment.set($event)"
             maxlength="500"
+            [class.border-red-500]="userComment().length === 0"
             class="w-full bg-white/5 border border-white/10 rounded-xl p-4 mb-2 focus:outline-none focus:border-[#E50914] resize-none transition" 
-            placeholder="Qu'avez-vous pensé de ce film ? (optionnel)"></textarea>
-          <p class="text-xs text-gray-500 mb-6 text-right">{{ userComment().length }}/500</p>
+            placeholder="Qu'avez-vous pensé de ce film ? (obligatoire)"></textarea>
+          <div class="flex justify-between items-center mb-6">
+            @if (userComment().length === 0) {
+              <p class="text-xs text-red-400">Le commentaire est obligatoire</p>
+            } @else {
+              <span></span>
+            }
+            <p class="text-xs text-gray-500">{{ userComment().length }}/500</p>
+          </div>
           
           <!-- Submit Button -->
           <button 
             (click)="submitReview()"
-            [disabled]="isSubmittingReview()"
+            [disabled]="isSubmittingReview() || userComment().trim().length === 0"
             class="w-full bg-[#E50914] hover:bg-[#B20710] py-4 rounded-xl font-bold text-lg active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed">
             @if (isSubmittingReview()) {
               <i class="fa-solid fa-spinner fa-spin mr-2"></i>

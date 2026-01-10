@@ -172,70 +172,55 @@
               <p class="text-gray-500 max-w-sm">Vos amis n'ont pas encore partagé de films avec vous. Commencez à suivre des cinéphiles !</p>
             </div>
           } @else {
-            <!-- Featured Shared Movie -->
-            @if (featuredMovie(); as featured) {
-              <a 
-                [routerLink]="['/movie', featured.tmdbId]"
-                class="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer mb-8 block">
-                <img 
-                  [src]="getBackdropUrl(featured.backdropPath || null)" 
-                  [alt]="featured.title"
-                  class="w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-70">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                
-                <!-- Sender Badge -->
-                <div class="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
+            <!-- All Shared Movies as Large Cards -->
+            <div class="flex-1 overflow-y-auto space-y-6 no-scrollbar">
+              @for (movie of sharedMovies(); track movie.tmdbId) {
+                <a 
+                  [routerLink]="['/movie', movie.tmdbId]"
+                  class="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer block">
                   <img 
-                    [src]="getAvatarUrl(featured.sharedBy.username)" 
-                    [alt]="featured.sharedBy.username"
-                    class="w-6 h-6 rounded-full">
-                  <span class="text-xs font-medium text-white">
-                    Recommandé par <span class="text-[#E50914] font-bold">{{ featured.sharedBy.username }}</span>
-                  </span>
-                </div>
-                
-                <!-- Content Overlay -->
-                <div class="absolute bottom-0 left-0 p-8 w-full">
-                  <h4 class="text-4xl font-black mb-3 uppercase">{{ featured.title }}</h4>
-                  <div class="flex items-center gap-4">
-                    <button class="bg-white text-black px-8 py-3 rounded-full font-bold text-sm flex items-center gap-2 hover:bg-gray-200 transition">
-                      <i class="fa-solid fa-play"></i> Regarder
-                    </button>
-                    <button class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-full font-bold text-sm hover:bg-white/20 transition">
-                      Ajouter
-                    </button>
-                  </div>
-                </div>
-              </a>
-            }
-            
-            <!-- Other Shared Movies Grid -->
-            @if (sharedMovies().length > 1) {
-              <div>
-                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Récents</h4>
-                <div class="grid grid-cols-3 gap-4">
-                  @for (movie of sharedMovies().slice(1, 4); track movie.tmdbId) {
-                    <a [routerLink]="['/movie', movie.tmdbId]" class="group cursor-pointer">
-                      <div class="relative aspect-video rounded-xl overflow-hidden mb-2">
-                        <img 
-                          [src]="getBackdropUrl(movie.backdropPath || null)" 
-                          [alt]="movie.title"
-                          class="w-full h-full object-cover group-hover:scale-105 transition">
-                        <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition"></div>
-                        <div class="absolute top-2 left-2 ring-2 ring-[#141414] rounded-full overflow-hidden w-7 h-7">
-                          <img 
-                            [src]="getAvatarUrl(movie.sharedBy.username)" 
-                            [alt]="movie.sharedBy.username"
-                            class="w-full h-full object-cover">
-                        </div>
-                      </div>
-                      <p class="text-xs font-bold truncate uppercase">{{ movie.title }}</p>
-                      <p class="text-[10px] text-gray-500 mt-1">{{ formatDate(movie.sharedAt) }}</p>
-                    </a>
+                    [src]="getBackdropUrl(movie.backdropPath || movie.posterPath || null)" 
+                    [alt]="movie.title"
+                    class="w-full h-full object-cover transition duration-700 group-hover:scale-105 opacity-80">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+                  
+                  <!-- Sender Badge -->
+                  @if (movie.sharedBy?.username) {
+                    <div class="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
+                      <img 
+                        [src]="getAvatarUrl(movie.sharedBy.username)" 
+                        [alt]="movie.sharedBy.username"
+                        class="w-6 h-6 rounded-full">
+                      <span class="text-xs font-medium text-white">
+                        Recommandé par <span class="text-[#E50914] font-bold">{{ movie.sharedBy.username }}</span>
+                      </span>
+                    </div>
                   }
-                </div>
-              </div>
-            }
+                  
+                  <!-- Content Overlay -->
+                  <div class="absolute bottom-0 left-0 p-6 w-full">
+                    <h4 class="text-2xl md:text-3xl font-black mb-2 uppercase line-clamp-1">{{ movie.title }}</h4>
+                    @if (movie.overview) {
+                      <p class="text-sm text-gray-300 line-clamp-2 mb-3">{{ movie.overview }}</p>
+                    }
+                    <div class="flex items-center gap-4">
+                      <div class="flex items-center gap-2 text-sm">
+                        @if (movie.voteAverage) {
+                          <span class="flex items-center gap-1 text-yellow-400">
+                            <i class="fa-solid fa-star text-xs"></i>
+                            {{ movie.voteAverage | number:'1.1-1' }}
+                          </span>
+                        }
+                        @if (movie.releaseDate) {
+                          <span class="text-gray-400">{{ movie.releaseDate | slice:0:4 }}</span>
+                        }
+                      </div>
+                      <span class="text-xs text-gray-500">{{ formatDate(movie.sharedAt) }}</span>
+                    </div>
+                  </div>
+                </a>
+              }
+            </div>
           }
         </div>
       </section>
@@ -274,25 +259,6 @@
                 <p class="text-sm text-gray-500">Aucune activité récente</p>
               </div>
             }
-            
-            <!-- Community Challenge Card -->
-            <div class="mt-8 p-5 bg-gradient-to-br from-[#E50914]/20 to-transparent rounded-2xl border border-[#E50914]/20 shadow-xl">
-              <h5 class="text-white font-black text-sm mb-1 uppercase tracking-tighter italic">Challenge du mois</h5>
-              <p class="text-[11px] text-gray-400 mb-4">Regardez 5 films recommandés par vos amis</p>
-              <div class="flex items-center justify-between">
-                <div class="flex -space-x-2">
-                  @for (i of [1, 2, 3, 4]; track i) {
-                    <img 
-                      [src]="getAvatarUrl('user' + i)" 
-                      class="w-8 h-8 rounded-full border-2 border-[#141414]" 
-                      alt="Participant">
-                  }
-                </div>
-                <button class="text-xs text-[#E50914] font-black hover:text-white transition uppercase tracking-widest">
-                  Rejoindre
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </aside>

@@ -2,8 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -245,12 +244,10 @@ import { environment } from '../../../../environments/environment';
 export class RegisterComponent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
-  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
   readonly showPassword = signal(false);
   readonly showConfirmPassword = signal(false);
-  readonly isLoading = signal(false);
-  readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
   
   private submitted = false;
@@ -266,6 +263,10 @@ export class RegisterComponent {
   readonly posterImages = Array.from({ length: 70 }, (_, i) => 
     `https://picsum.photos/id/${1011 + (i % 60)}/300/450`
   );
+
+  // Expose AuthService signals
+  get isLoading() { return this.authService.isLoading; }
+  get errorMessage() { return this.authService.error; }
 
   togglePasswordVisibility(): void {
     this.showPassword.update(show => !show);
@@ -293,7 +294,7 @@ export class RegisterComponent {
 
   onSubmit(): void {
     this.submitted = true;
-    this.errorMessage.set(null);
+    this.authService.clearError();
     this.successMessage.set(null);
 
     if (this.registerForm.invalid) {
@@ -301,25 +302,20 @@ export class RegisterComponent {
       return;
     }
 
-    this.isLoading.set(true);
-
     const { username, email, password } = this.registerForm.value;
 
-    // Note: Keycloak doesn't have a direct registration endpoint via password grant.
-    // Registration is typically handled via:
-    // 1. Admin API (requires admin token)
-    // 2. Self-registration form (redirect to Keycloak)
-    // 3. Custom backend endpoint
-    // For now, we'll simulate a redirect to login after showing success message.
-    
-    // Simulate registration (in production, call your backend registration endpoint)
-    setTimeout(() => {
-      this.isLoading.set(false);
-      this.successMessage.set('Compte créé avec succès ! Redirection vers la page de connexion...');
-      
-      setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 2000);
-    }, 1500);
+    this.authService.register({ username, email, password }).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.successMessage.set(response.message);
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        }
+      },
+      error: () => {
+        // Error is already handled by AuthService
+      }
+    });
   }
 }

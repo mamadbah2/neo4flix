@@ -64,9 +64,9 @@ function handleUnauthorizedError(
   // If token is expired, try to refresh
   if (authService.getRefreshToken()) {
     return authService.refreshToken().pipe(
-      switchMap(tokenResponse => {
+      switchMap(newToken => {
         // Retry the original request with new token
-        const retryReq = addTokenToRequest(req, tokenResponse.access_token);
+        const retryReq = addTokenToRequest(req, newToken);
         return next(retryReq);
       }),
       catchError(refreshError => {

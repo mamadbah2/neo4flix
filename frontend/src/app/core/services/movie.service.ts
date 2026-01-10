@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Movie, MoviePage, Genre, ReviewPage, BatchMoviesRequest, MovieRatingPage } from '../interfaces/movie.interface';
+import { Movie, MoviePage, Genre, ReviewPage, BatchMoviesRequest, MovieRatingPage, SyncResponse } from '../interfaces/movie.interface';
 
 /**
  * MovieService - Handles all movie-related API calls
@@ -215,6 +215,28 @@ export class MovieService {
 
     return this.http.post<Movie[]>(`${this.apiUrl}/batch`, request)
       .pipe(catchError(this.handleError<Movie[]>('getMoviesBatch', [])));
+  }
+
+  // ===========================================
+  // SYNC ENDPOINT
+  // ===========================================
+
+  /**
+   * Synchronize a movie to Neo4j database
+   * Call this when visiting a movie detail page to ensure movie exists in Neo4j
+   * for ratings, watchlist, and recommendations
+   * @param tmdbId TMDb ID of the movie to sync
+   */
+  syncMovie(tmdbId: number): Observable<SyncResponse> {
+    return this.http.post<SyncResponse>(`${this.apiUrl}/${tmdbId}/sync`, {})
+      .pipe(
+        catchError(this.handleError<SyncResponse>('syncMovie', {
+          tmdbId,
+          title: '',
+          created: false,
+          message: 'Sync failed'
+        }))
+      );
   }
 
   // ===========================================

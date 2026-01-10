@@ -1,17 +1,19 @@
 import { inject, PLATFORM_ID } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
+import { KeycloakService } from 'keycloak-angular';
 import { AuthService } from '../services/auth.service';
 
 /**
  * Auth Guard - Protects routes that require authentication
- * Stores the attempted URL before redirecting to login
+ * Uses Keycloak for authentication check
  */
 export const authGuard: CanActivateFn = (
   route: ActivatedRouteSnapshot,
   state: RouterStateSnapshot
 ) => {
   const authService = inject(AuthService);
+  const keycloakService = inject(KeycloakService);
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
 
@@ -20,29 +22,37 @@ export const authGuard: CanActivateFn = (
     return true;
   }
 
-  if (authService.isLoggedIn()) {
-    // Check if token is about to expire
-    if (authService.isTokenExpired()) {
-      // Try to refresh token
-      authService.refreshToken().subscribe({
-        next: () => {
-          // Token refreshed, continue
-        },
-        error: () => {
-          // Refresh failed, redirect to login
+  try {
+    const isLoggedIn = keycloakService.isLoggedIn();
+    
+    if (isLoggedIn) {
+      // Check if token is about to expire and refresh if needed
+      if (keycloakService.isTokenExpired(30)) {
+        keycloakService.updateToken(30).catch(() => {
           authService.setReturnUrl(state.url);
-          router.navigate(['/login']);
-        }
-      });
+          keycloakService.login({
+            redirectUri: window.location.origin + state.url
+          });
+        });
+      }
+      return true;
     }
-    return true;
+  } catch {
+    // Keycloak not ready
   }
 
   // Store the attempted URL for redirecting after login
   authService.setReturnUrl(state.url);
 
-  // Redirect to the login page
-  router.navigate(['/login']);
+  // Redirect to Keycloak login
+  try {
+    keycloakService.login({
+      redirectUri: window.location.origin + state.url
+    });
+  } catch {
+    router.navigate(['/login']);
+  }
+  
   return false;
 };
 
@@ -50,7 +60,7 @@ export const authGuard: CanActivateFn = (
  * Guest Guard - Prevents authenticated users from accessing login/register pages
  */
 export const guestGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
+  const keycloakService = inject(KeycloakService);
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
 
@@ -59,10 +69,14 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  if (authService.isLoggedIn()) {
-    // User is already logged in, redirect to home
-    router.navigate(['/home']);
-    return false;
+  try {
+    if (keycloakService.isLoggedIn()) {
+      // User is already logged in, redirect to home
+      router.navigate(['/home']);
+      return false;
+    }
+  } catch {
+    // Keycloak not ready, allow access
   }
 
   return true;

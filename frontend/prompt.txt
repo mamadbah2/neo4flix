@@ -1,0 +1,123 @@
+###############################################################################
+# ÉTAPE 0 : REGISTRATION DES UTILISATEURS (SI NÉCESSAIRE)
+###############################################################################
+
+### 1. Get Access Token
+# @name adminToken
+POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id=neo4flix-app&client_secret=x4I746Xkmejuj7zi7AC4WJh1DPk97Tyu
+
+### 2. Register New User
+POST http://keycloak4flix.duckdns.org/admin/realms/neo4flix/users
+Authorization: Bearer {{administratorToken}}
+Content-Type: application/json
+
+{
+  "username": "annndiaye",
+  "email": "annndiaye@gmail.com",
+  "enabled": true,
+  "firstName": "Anna",
+  "lastName": "Ndiaye",
+  "credentials": [
+    {
+      "type": "password",
+      "value": "password123",
+      "temporary": false
+    }
+  ]
+}
+
+
+Voici comment le registration fonctionne donc assure que c'est bien implemente dans le auth service pour que le register fonctionne
+
+Ensuite tu pourras implemente le fait Lorsqu'on accède à la page détail d'un film, l'ajouter automatiquement dans Neo4j en faisant une
+requete /sync. Cette sync sert juste a mettre le film tmdb dans la base neo4j s'il n'y ait pas.
+### 6. Synchroniser un Film (pour Watchlist/Rating)
+
+**Endpoint:** `POST /api/movies/{tmdbId}/sync`
+
+| Paramètre | Type | Description |
+|-----------|------|-------------|
+| `tmdbId` | number (path) | ID TMDb du film |
+
+**Auth:** ❌ Non requise
+
+**Response (200 OK - Film déjà existant):**
+```json
+{
+  "tmdbId": 27205,
+  "title": "Inception",
+  "created": false,
+  "message": "Movie already exists in Neo4j"
+}
+```
+
+**Response (201 Created - Nouveau film):**
+```json
+{
+  "tmdbId": 27205,
+  "title": "Inception",
+  "created": true,
+  "message": "Movie synchronized to Neo4j"
+}
+```
+
+ Amélioration de la page sociale
+- Pour la partie centrale ou tu affiche les recommandations qui m'ont ete partage. il faut afficher tous les share. Au lieu de faire un gros 
+et 3 petits blocs en bas il faut juste mettre des gros blocs autant de fois qu'il y a eu de partage recu
+- Implémenter une requête `/batch` pour récupérer toutes les infos à afficher ( sinon lle backend ne renvoie actuellement que ceci) :
+
+```json
+[
+  {
+    "tmdbId": 81,
+    "title": "Nausicaä de la vallée du vent",
+    "overview": null,
+    "posterPath": "/sIcv6IiaL6Ad2KGUOdRyJHIZpgC.jpg",
+    "voteAverage": null,
+    "genres": null
+  },
+  {
+    "tmdbId": 372058,
+    "title": "Your Name.",
+    "overview": null,
+    "posterPath": "/zyHjvVRgKOt9wgVx4ikp2kGArGF.jpg",
+    "voteAverage": null,
+    "genres": null
+  },
+  {
+    "tmdbId": 274,
+    "title": "Le Silence des agneaux",
+    "overview": null,
+    "posterPath": "/sSQDxwm4r28YpJSQVyVOtpYVs0E.jpg",
+    "voteAverage": null,
+    "genres": null
+  },
+  {
+    "tmdbId": 1311031,
+    "title": "Demon Slayer : Kimetsu no Yaiba - Le film : La Forteresse infinie",
+    "overview": null,
+    "posterPath": "/wXTU3AFmlUPbqjH68MZ989uHd6k.jpg",
+    "voteAverage": null,
+    "genres": null
+  }
+]
+```
+
+## 5. Correction bug ajout d'ami (page sociale)
+- Après avoir ajouté un premier ami, une erreur apparaît et le composant permettant de choisir
+un :
+  ```
+  ERROR TypeError: Cannot read properties of undefined (reading 'username')
+  at SocialComponent_Conditional_42_Conditional_0_Template (social.component.html:189:21)
+  ...
+  ```
+- Vérifier le fonctionnement en local (test .http), puis corriger le problème.
+
+## 6. UI sociale
+- Enlever le bloc rouge à droite "challenge du mois" se trouvant dans la page socialet le flux d'activite
+
+
+

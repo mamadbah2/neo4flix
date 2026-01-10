@@ -200,6 +200,17 @@ export class MovieDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       this.isLoading.set(false);
       
       if (movie) {
+        // Sync movie to Neo4j (fire-and-forget)
+        // This ensures the movie exists in Neo4j for ratings, watchlist, recommendations
+        this.movieService.syncMovie(tmdbId).subscribe({
+          next: (response) => {
+            if (response.created) {
+              console.log(`Movie "${response.title}" synced to Neo4j`);
+            }
+          },
+          error: (err) => console.warn('Movie sync failed:', err)
+        });
+        
         // Update similar movies config
         this.similarMoviesConfig.movieId = movie.tmdbId;
         
@@ -304,27 +315,37 @@ export class MovieDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   
   /**
    * Submit user review
+   * Comment is required
    */
   submitReview(): void {
     const m = this.movie();
     if (!m) return;
+    
+    // Validate comment is not empty
+    const comment = this.userComment().trim();
+    if (!comment) {
+      this.toastService.error('Le commentaire est obligatoire');
+      return;
+    }
     
     this.isSubmittingReview.set(true);
     
     this.ratingService.rateMovie({
       tmdbId: m.tmdbId,
       score: this.userRating(),
-      comment: this.userComment() || undefined
+      comment: comment
     }).subscribe({
       next: () => {
         this.isSubmittingReview.set(false);
         this.closeReviewModal();
+        this.toastService.success('Votre avis a été publié !');
         // Reload reviews to show the new one
         this.reviewsPage.set(1);
         this.loadReviews(m.tmdbId);
       },
       error: () => {
         this.isSubmittingReview.set(false);
+        this.toastService.error('Erreur lors de la publication');
       }
     });
   }
