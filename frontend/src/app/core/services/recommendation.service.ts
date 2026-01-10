@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, of } from 'rxjs';
+import { Observable, catchError, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { MovieRecommendation, MoviePage } from '../interfaces/movie.interface';
+import { MovieRecommendation, MoviePage, Movie, BatchMoviesRequest } from '../interfaces/movie.interface';
 
 /**
  * RecommendationService - Handles personalized movie recommendations
@@ -19,14 +19,62 @@ export class RecommendationService {
 
   /**
    * Get personalized recommendations for the current user
+   * Returns raw recommendations (may have null fields)
    */
-  getRecommendations(): Observable<MovieRecommendation[]> {
+  getRawRecommendations(): Observable<MovieRecommendation[]> {
     return this.http.get<MovieRecommendation[]>(this.apiUrl).pipe(
       catchError(error => {
         console.error('Failed to get recommendations:', error);
         return of([]);
       })
     );
+  }
+
+  /**
+   * Get personalized recommendations enriched with full movie data
+   * Fetches recommendations then enriches via batch endpoint
+   */
+  getRecommendations(): Observable<Movie[]> {
+    return this.getRawRecommendations().pipe(
+      switchMap(recommendations => {
+        if (recommendations.length === 0) {
+          return of([]);
+        }
+
+        // Extract tmdbIds from recommendations
+        const tmdbIds = recommendations.map(rec => rec.tmdbId);
+
+        // Enrich with full movie data via batch endpoint
+        return this.getMoviesBatch(tmdbIds);
+      }),
+      catchError(error => {
+        console.error('Failed to enrich recommendations:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Get multiple movies by their TMDb IDs in a single request
+   * Used to enrich recommendation lists with full movie data
+   */
+  private getMoviesBatch(tmdbIds: number[]): Observable<Movie[]> {
+    if (!tmdbIds || tmdbIds.length === 0) {
+      return of([]);
+    }
+
+    const request: BatchMoviesRequest = {
+      tmdbIds,
+      language: this.defaultLanguage
+    };
+
+    return this.http.post<Movie[]>(`${this.moviesApiUrl}/batch`, request)
+      .pipe(
+        catchError(error => {
+          console.error('Failed to batch fetch movies:', error);
+          return of([]);
+        })
+      );
   }
 
   /**

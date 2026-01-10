@@ -23,7 +23,7 @@ spring:
 
 movie:
   service:
-    url: http://movie-service:8082/
+    url: ${MOVIE_SERVICE_URL:http://localhost:8082}
 
 # Pour voir les requêtes Cypher dans la console (Utile pour apprendre !)
 logging:

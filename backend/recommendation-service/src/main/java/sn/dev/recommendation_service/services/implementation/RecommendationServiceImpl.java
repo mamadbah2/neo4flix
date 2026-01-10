@@ -43,6 +43,12 @@ public class RecommendationServiceImpl implements RecommendationService {
         List<MovieResponse> collaborative = movieClient.getCollaborativeRecs().getBody();
         List<MovieResponse> genreBased = movieClient.getGenreBasedRecs().getBody();
 
+        // Debug logs
+        System.out.println("====================================================================================");
+        System.out.println("Collaborative Recs: " + (collaborative != null ? collaborative.size() : 0));
+        System.out.println("Genre-Based Recs: " + (genreBased != null ? genreBased.size() : 0));
+        System.out.println("=====================================================================================");
+
         // 3. Fusionner en évitant les doublons et en gardant les films partagés en tête
         LinkedHashSet<MovieResponse> combined = new LinkedHashSet<>(boostedMovies);
         

@@ -59,6 +59,7 @@ services:
       - "8084:8084"
     environment:
       <<: *neo-env
+      MOVIE_SERVICE_URL: http://movie-service:8082
     networks:
       - neo4flix-network
     healthcheck:
@@ -79,6 +80,7 @@ services:
       - "8083:8083"
     environment:
       <<: *neo-env
+      MOVIE_SERVICE_URL: http://movie-service:8082
     networks:
       - neo4flix-network
     healthcheck:
@@ -99,6 +101,7 @@ services:
       - "8081:8081"
     environment:
       <<: *neo-env
+      MOVIE_SERVICE_URL: http://movie-service:8082
     networks:
       - neo4flix-network
     healthcheck:

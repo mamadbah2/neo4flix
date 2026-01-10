@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Movie, MoviePage, Genre, ReviewPage, BatchMoviesRequest } from '../interfaces/movie.interface';
+import { Movie, MoviePage, Genre, ReviewPage, BatchMoviesRequest, MovieRatingPage } from '../interfaces/movie.interface';
 
 /**
  * MovieService - Handles all movie-related API calls
@@ -132,6 +132,7 @@ export class MovieService {
 
   /**
    * Get movie reviews (paginated)
+   * @deprecated Use RatingService.getMovieRatings() instead for the new ratings endpoint
    * Returns local reviews first, then TMDb reviews
    */
   getMovieReviews(tmdbId: number, page: number = 1, size: number = 5): Observable<ReviewPage> {
@@ -148,6 +149,27 @@ export class MovieService {
         totalResults: 0,
         hasNext: false,
         hasPrevious: false
+      })));
+  }
+
+  /**
+   * Get movie ratings from Neo4j community (paginated)
+   * Endpoint: GET /api/rates/movie/{tmdbId}
+   * This is the preferred method for getting community ratings
+   */
+  getMovieRatings(tmdbId: number, page: number = 1, size: number = 10): Observable<MovieRatingPage> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<MovieRatingPage>(`${environment.apiUrl}/api/rates/movie/${tmdbId}`, { params })
+      .pipe(catchError(this.handleError<MovieRatingPage>('getMovieRatings', {
+        tmdbId,
+        page: 1,
+        totalPages: 0,
+        totalResults: 0,
+        averageScore: 0,
+        ratings: []
       })));
   }
 

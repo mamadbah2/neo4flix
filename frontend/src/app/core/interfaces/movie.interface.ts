@@ -175,6 +175,28 @@ export interface RateResponse {
   score: number;
 }
 
+/**
+ * Individual rating from a user
+ */
+export interface MovieRating {
+  score: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+/**
+ * Paginated response for movie ratings
+ * Endpoint: GET /api/rates/movie/{tmdbId}
+ */
+export interface MovieRatingPage {
+  tmdbId: number;
+  page: number;
+  totalPages: number;
+  totalResults: number;
+  averageScore: number;
+  ratings: MovieRating[];
+}
+
 // ===========================================
 // REVIEW INTERFACES
 // ===========================================

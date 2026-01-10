@@ -14,7 +14,7 @@
 ###############################################################################
 
 @baseUrl = http://localhost:5050
-@tmdbId = 27205
+@tmdbId = 1311031
 
 # Tokens - à récupérer dynamiquement
 @tokenUserA = {{loginUserA.response.body.access_token}}
@@ -122,7 +122,7 @@ Authorization: Bearer {{tokenUserA}}
 
 ### 5 User B récupère ses recommandations (Inception devrait être en tête grâce au boost social)
 GET {{baseUrl}}/api/recommendations/
-Authorization: Bearer {{tokenUserA}}
+Authorization: Bearer {{tokenUserB}}
 
 ### 5.2 User B récupère uniquement les films partagés par ses amis
 GET {{baseUrl}}/api/recommendations/shared

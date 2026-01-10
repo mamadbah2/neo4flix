@@ -1,8 +1,8 @@
 import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, throwError, BehaviorSubject } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
+import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import {
@@ -95,6 +95,7 @@ export class AuthService {
 
   /**
    * Login with username and password (Keycloak password grant)
+   * After successful authentication, syncs user with backend via /api/users/me
    */
   login(credentials: LoginRequest): Observable<TokenResponse> {
     this._isLoading.set(true);
@@ -117,11 +118,44 @@ export class AuthService {
     ).pipe(
       tap(response => {
         this.handleAuthSuccess(response);
+      }),
+      // After successful Keycloak auth, sync user with backend
+      switchMap(response => {
+        return this.syncUserWithBackend().pipe(
+          map(() => response),
+          catchError(() => {
+            // Continue even if backend sync fails - user is authenticated
+            console.warn('Backend user sync failed, continuing with Keycloak data');
+            return of(response);
+          })
+        );
+      }),
+      tap(() => {
         this._isLoading.set(false);
       }),
       catchError(error => {
         this._isLoading.set(false);
         return this.handleAuthError(error);
+      })
+    );
+  }
+
+  /**
+   * Sync user with backend by calling /api/users/me
+   * This ensures the user exists in Neo4j and returns fresh user data
+   */
+  syncUserWithBackend(): Observable<User> {
+    return this.http.get<User>(`${environment.apiUrl}/api/users/me`).pipe(
+      tap(user => {
+        // Update local user state with backend response
+        this._user.set(user);
+        if (this.isBrowser()) {
+          localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+        }
+      }),
+      catchError(error => {
+        console.error('Failed to sync user with backend:', error);
+        return throwError(() => error);
       })
     );
   }
