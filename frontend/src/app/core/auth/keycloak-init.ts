@@ -1,14 +1,20 @@
+import { inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { KeycloakService } from 'keycloak-angular';
 import { environment } from '../../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 
 /**
  * Keycloak Initialization Factory
  * Initializes Keycloak with Authorization Code + PKCE flow for 2FA support
+ * Automatically syncs user with backend after successful authentication
  * 
  * @param keycloak KeycloakService instance
  * @returns Promise that resolves when Keycloak is initialized
  */
 export function initializeKeycloak(keycloak: KeycloakService): () => Promise<boolean> {
+  const http = inject(HttpClient);
+  
   return async () => {
     // Skip initialization on server-side (SSR)
     if (typeof window === 'undefined') {
@@ -42,15 +48,26 @@ export function initializeKeycloak(keycloak: KeycloakService): () => Promise<boo
         ]
       });
 
-      // If user is logged in, sync with backend
+      // If user is logged in, sync with backend (Neo4j)
       if (initialized && keycloak.isLoggedIn()) {
-        console.log('Keycloak: User is authenticated');
+        try {
+          const token = keycloak.getToken();
+          const user = await firstValueFrom(
+            http.get(`${environment.apiUrl}/api/users/me`, {
+              headers: { Authorization: `Bearer ${token}` }
+            })
+          );
+          console.log('Keycloak: User authenticated and synced with backend:', user);
+        } catch (syncError) {
+          console.warn('Failed to sync user with backend:', syncError);
+          // Continue anyway - user is authenticated in Keycloak
+        }
       }
 
       return initialized;
     } catch (error) {
       console.warn('Keycloak initialization failed, continuing without auth:', error);
-      // Return true to allow the app to continue loading
+      // Return false to allow the app to continue loading
       // User will need to click login to authenticate
       return false;
     }
