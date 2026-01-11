@@ -14,8 +14,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak4flix.duckdns.org/realms/neo4flix
-          jwk-set-uri: http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/certs
+          issuer-uri: https://keykloak.freeddns.org/realms/neo4flix
+          jwk-set-uri: https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/certs
 
 logging:
   level:

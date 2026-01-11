@@ -19,7 +19,7 @@ spring:
       resourceserver:
         jwt:
           # URL interne Docker vers ton royaume (realm) Keycloak
-          issuer-uri: http://keycloak4flix.duckdns.org/realms/neo4flix
+          issuer-uri: https://keykloak.freeddns.org/realms/neo4flix
 
 movie:
   service:

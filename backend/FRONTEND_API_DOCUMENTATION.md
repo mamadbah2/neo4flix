@@ -62,7 +62,7 @@ export const environment = {
 ### Login - Obtenir un Token
 
 ```http
-POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 ```
 
@@ -91,7 +91,7 @@ password=<password>
 ### Refresh Token
 
 ```http
-POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 ```
 

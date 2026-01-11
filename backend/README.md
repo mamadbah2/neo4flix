@@ -177,7 +177,7 @@ curl http://localhost:5050/api/movies/27205
 
 ```bash
 # Login to get a token
-curl -X POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token \
+curl -X POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password&client_id=neo4flix-app&username=mamadbah&password=password123"
 
@@ -310,7 +310,7 @@ Open these files in VS Code with the REST Client extension or IntelliJ IDEA.
 curl http://localhost:5050/api/movies/discovery/trending | jq
 
 # Test authentication
-curl -X POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token \
+curl -X POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password&client_id=neo4flix-app&username=testuser&password=testpass"
 ```

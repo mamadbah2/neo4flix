@@ -33,7 +33,7 @@
 
 ### 1. Get Access Token
 # @name adminToken
-POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials&client_id=neo4flix-app&client_secret=x4I746Xkmejuj7zi7AC4WJh1DPk97Tyu
@@ -64,14 +64,14 @@ Content-Type: application/json
 
 ### 1.1 Login User A (mamadbah)
 # @name loginUserA
-POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=password&client_id=neo4flix-app&username=mamadbah&password=password123
 
 ### 1.2 Login User B (cheimbaye)
 # @name loginUserB
-POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=password&client_id=neo4flix-app&username=cheimbaye&password=password123
@@ -305,14 +305,14 @@ Authorization: Bearer {{tokenUserB}}
 
 ### Refresh token User A
 # @name refreshUserA
-POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=refresh_token&client_id=neo4flix-app&refresh_token={{refreshTokenA}}
 
 ### Refresh token User B
 # @name refreshUserB
-POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=refresh_token&client_id=neo4flix-app&refresh_token={{refreshTokenB}}

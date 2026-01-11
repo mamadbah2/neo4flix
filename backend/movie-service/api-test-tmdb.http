@@ -24,7 +24,7 @@
 
 ### 0.1 Login pour obtenir un token
 # @name login
-POST http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token
+POST https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=password&client_id=neo4flix-app&username=mamadbah&password=password123

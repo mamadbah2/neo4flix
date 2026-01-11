@@ -18,7 +18,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://keycloak4flix.duckdns.org/realms/neo4flix
+          issuer-uri: https://keykloak.freeddns.org/realms/neo4flix
 
 # Movie service URL pour la synchronisation
 movie:
