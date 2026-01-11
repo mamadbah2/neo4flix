@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://your-backend-url.vercel.app', // TODO: Remplacer par votre URL backend déployée
+  apiUrl: 'https://neo4flix.freeddns.org', // TODO: Remplacer par votre URL backend déployée
   keycloak: {
     url: 'https://keykloak.freeddns.org', // Votre Keycloak est déjà accessible publiquement
     realm: 'neo4flix',
