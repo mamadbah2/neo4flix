@@ -10,22 +10,6 @@ export const routes: Routes = [
     canActivate: [guestGuard]
   },
   
-  // Login page (public, guests only)
-  {
-    path: 'login',
-    loadComponent: () => import('./features/auth/components/login.component')
-      .then(m => m.LoginComponent),
-    canActivate: [guestGuard]
-  },
-  
-  // Register page (public, guests only)
-  {
-    path: 'register',
-    loadComponent: () => import('./features/auth/components/register.component')
-      .then(m => m.RegisterComponent),
-    canActivate: [guestGuard]
-  },
-  
   // Home page (protected)
   {
     path: 'home',

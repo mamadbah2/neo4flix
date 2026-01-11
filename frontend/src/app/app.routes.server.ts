@@ -6,14 +6,6 @@ export const serverRoutes: ServerRoute[] = [
     path: '',
     renderMode: RenderMode.Prerender
   },
-  {
-    path: 'login',
-    renderMode: RenderMode.Prerender
-  },
-  {
-    path: 'register',
-    renderMode: RenderMode.Prerender
-  },
   
   // Protected pages - Client-side rendering only (no SSR)
   // These require authentication which is client-side only

@@ -185,7 +185,7 @@
                   <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
                   
                   <!-- Sender Badge -->
-                  @if (movie.sharedBy?.username) {
+                  @if (movie.sharedBy && movie.sharedBy.username) {
                     <div class="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
                       <img 
                         [src]="getAvatarUrl(movie.sharedBy.username)" 

@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="bg-black text-white font-sans min-h-screen flex flex-col relative overflow-x-hidden">
       
@@ -29,11 +29,11 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
           </a>
         </div>
         <div class="flex items-center gap-4">
-          <a 
-            routerLink="/login" 
+          <button 
+            (click)="onLogin()"
             class="bg-[#E50914] hover:bg-[#B20710] text-white px-4 py-1.5 rounded text-sm font-semibold transition-colors duration-200">
             S'identifier
-          </a>
+          </button>
         </div>
       </nav>
 
@@ -56,9 +56,17 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
           
           <!-- Description -->
           <p class="text-base md:text-lg text-gray-400 max-w-xl mx-auto pb-4">
-            Prêt à regarder Neo4flix ? Saisissez votre adresse e-mail pour vous abonner ou réactiver votre abonnement.
+            Prêt à regarder Neo4flix ? Connectez-vous pour découvrir des milliers de films et séries.
           </p>
-          
+
+          <!-- CTA Button -->
+          <div class="pt-4">
+            <button
+              (click)="onLogin()"
+              class="bg-[#E50914] hover:bg-[#B20710] text-white px-8 py-3 rounded text-lg font-bold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+              Commencer maintenant
+            </button>
+          </div>
           
         </div>
       </main>
@@ -150,36 +158,16 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
   `]
 })
 export class LandingComponent {
-  private readonly fb = inject(FormBuilder);
-  private readonly router = inject(Router);
-
-  private submitted = false;
-
-  emailForm: FormGroup = this.fb.group({
-    email: ['', [Validators.email]]
-  });
+  private readonly authService = inject(AuthService);
 
   // Generate poster images for background
   readonly posterImages = Array.from({ length: 70 }, (_, i) => 
     `https://picsum.photos/id/${1011 + (i % 60)}/300/450`
   );
 
-  isEmailInvalid(): boolean {
-    const email = this.emailForm.get('email');
-    return !!(email && email.invalid && email.value && (email.dirty || email.touched || this.submitted));
-  }
-
-  onSubmit(): void {
-    this.submitted = true;
-    
-    const email = this.emailForm.get('email')?.value;
-    
-    if (email && this.emailForm.valid) {
-      // Navigate to register with email pre-filled
-      this.router.navigate(['/register'], { queryParams: { email } });
-    } else {
-      // Navigate to login page
-      this.router.navigate(['/login']);
-    }
+  onLogin(): void {
+    this.authService.login().subscribe({
+      error: (err) => console.error('Login failed:', err)
+    });
   }
 }
