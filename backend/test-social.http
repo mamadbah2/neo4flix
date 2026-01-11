@@ -39,7 +39,7 @@ Content-Type: application/x-www-form-urlencoded
 grant_type=client_credentials&client_id=neo4flix-app&client_secret=x4I746Xkmejuj7zi7AC4WJh1DPk97Tyu
 
 ### 2. Register New User
-POST http://keycloak4flix.duckdns.org/admin/realms/neo4flix/users
+POST https://keykloak.freeddns.org/admin/realms/neo4flix/users
 Authorization: Bearer {{administratorToken}}
 Content-Type: application/json
 

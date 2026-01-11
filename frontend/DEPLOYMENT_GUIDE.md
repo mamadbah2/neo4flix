@@ -22,7 +22,7 @@ Votre `AuthService` gère déjà correctement :
 Vous devez ajouter l'URL Vercel dans les **Valid Redirect URIs** de votre client Keycloak :
 
 ```
-1. Connectez-vous à Keycloak Admin : http://keycloak4flix.duckdns.org
+1. Connectez-vous à Keycloak Admin : https://keykloak.freeddns.org
 2. Allez dans : Clients > neo4flix-app > Settings
 3. Ajoutez dans "Valid Redirect URIs" :
    - https://votre-app.vercel.app/*
@@ -92,12 +92,12 @@ export const environment = {
   production: true,
   apiUrl: 'https://votre-backend-url.com', // Remplacez par l'URL de votre backend Spring Boot
   keycloak: {
-    url: 'http://keycloak4flix.duckdns.org',
+    url: 'https://keykloak.freeddns.org',
     realm: 'neo4flix',
     clientId: 'neo4flix-app',
     // ⚠️ Retirez clientSecret si non utilisé côté client
-    tokenEndpoint: 'http://keycloak4flix.duckdns.org/realms/neo4flix/protocol/openid-connect/token',
-    adminUrl: 'http://keycloak4flix.duckdns.org/admin/realms/neo4flix'
+    tokenEndpoint: 'https://keykloak.freeddns.org/realms/neo4flix/protocol/openid-connect/token',
+    adminUrl: 'https://keykloak.freeddns.org/admin/realms/neo4flix'
   }
 };
 ```

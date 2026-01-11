@@ -73,7 +73,8 @@ public class SecurityConfig {
                 "http://localhost:4200",
                 "http://127.0.0.1:4200",
                 "https://neo4flix-web.freeddns.org",
-                "https://neo4flix-p0s9kfh55-mamadbah2s-projects.vercel.app/"
+                "https://neo4flix-p0s9kfh55-mamadbah2s-projects.vercel.app/",
+                "https://neo4flix.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"

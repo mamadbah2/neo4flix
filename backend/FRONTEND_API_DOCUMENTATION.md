@@ -25,7 +25,7 @@
 | Movie Service | `http://localhost:8082` | `http://localhost:5050/api/movies` |
 | Rating Service | `http://localhost:8084` | `http://localhost:5050/api/rates` |
 | Recommendation Service | `http://localhost:8083` | `http://localhost:5050/api/recommendations` |
-| Keycloak | `http://keycloak4flix.duckdns.org` | - |
+| Keycloak | `https://keykloak.freeddns.org` | - |
 
 ### Base URL à utiliser dans Angular
 
@@ -35,7 +35,7 @@ export const environment = {
   production: false,
   apiUrl: 'http://localhost:5050',
   keycloak: {
-    url: 'http://keycloak4flix.duckdns.org',
+    url: 'https://keykloak.freeddns.org',
     realm: 'neo4flix',
     clientId: 'neo4flix-app'
   }
@@ -54,7 +54,7 @@ export const environment = {
 
 | Paramètre | Valeur |
 |-----------|--------|
-| URL | `http://keycloak4flix.duckdns.org` |
+| URL | `https://keykloak.freeddns.org` |
 | Realm | `neo4flix` |
 | Client ID | `neo4flix-app` |
 | Grant Type | `password` (dev) / `authorization_code` (prod) |
